@@ -1,6 +1,6 @@
 function PromptSection(props: { prompt?: string }) {
   return (
-    <div className="bg-gray-700/20 text-white/90 font-bold flex justify-start w-1/2 items-center border-l-8 border-green-500 px-3 h-auto min-h-12 rounded-2xl">
+    <div className="bg-gray-700/20 text-white/90 font-bold flex justify-start w-1/2 items-center hover:border-2 border-l-8 border-green-500 px-3 h-auto min-h-12 rounded-2xl">
       {props.prompt}
     </div>
   );

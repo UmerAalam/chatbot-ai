@@ -1,15 +1,24 @@
+import { useAppDispatch } from "src/app/hooks/hook";
 import { Button } from "@/components/ui/button";
 import aiIcon from "../../public/icons8-ai.svg";
 import { FaArrowRight } from "react-icons/fa";
 import { useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import { useAppDispatch } from "src/app/hooks/hook";
 import { addAnswerToChat, addPromptToChat } from "src/app/slices/chatSlice";
+import axios from "axios";
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   searchBtn?: (query: string) => void;
 }
-
+interface Data {
+  data: {
+    text: string;
+  };
+}
+const getData = async () => {
+  const data: Data = await axios.get("/api/lorem");
+  return data.data;
+};
 function SearchBar({ searchBtn, ...rest }: Props) {
   const [multiLine, setMultiLine] = useState(false);
   const [prompt, setPrompt] = useState("");
@@ -33,8 +42,10 @@ function SearchBar({ searchBtn, ...rest }: Props) {
       return;
     }
     setPrompt("");
+    const data = await getData();
+    console.log("Data from API:", data.text);
     dispatch(addPromptToChat(prompt));
-    dispatch(addAnswerToChat("Answer"));
+    dispatch(addAnswerToChat(data.text));
     searchBtn && searchBtn(prompt);
   };
 

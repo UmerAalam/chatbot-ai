@@ -17,7 +17,7 @@ app.use(
 const route = app.get("/api/lorem", async (c) => {
   try {
     const response = await axios.get(
-      "https://api.api-ninjas.com/v1/loremipsum?paragraphs=2",
+      "https://api.api-ninjas.com/v1/loremipsum?paragraphs=1",
       {
         headers: {
           "X-Api-Key": "8qhHUPNTSaLvKZMEpKxATw==OqDBv0P296pfpH7e",

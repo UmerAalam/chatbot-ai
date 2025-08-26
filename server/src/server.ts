@@ -2,8 +2,9 @@ import axios from "axios";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-
+import "dotenv/config";
 const app = new Hono();
+
 app.use(logger());
 app.use(
   "/api",
@@ -20,7 +21,7 @@ const route = app.get("/api/lorem", async (c) => {
       "https://api.api-ninjas.com/v1/loremipsum?paragraphs=1",
       {
         headers: {
-          "X-Api-Key": "8qhHUPNTSaLvKZMEpKxATw==OqDBv0P296pfpH7e",
+          "X-Api-Key": process.env.VITE_NINJA_API,
         },
       },
     );

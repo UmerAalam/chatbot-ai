@@ -3,6 +3,7 @@ import { FaArrowRight } from "react-icons/fa";
 import { useAppSelector } from "src/app/hooks/hook";
 import { Chat } from "src/app/slices/chatSlice";
 import AnswerPrompt from "src/components/AnswerPrompt";
+import ChatPanel from "src/components/ChatPanel";
 import PromptSection from "src/components/PromptSection";
 import SearchBar from "src/components/SearchBar";
 
@@ -28,10 +29,11 @@ function ChatPage() {
         <div className="w-full px-50 flex flex-col gap-5 mt-20 justify-end">
           {renderChatSections}
         </div>
-        <div className="flex justify-center items-end w-full h-full">
-          <div className="flex justify-center items-center w-full mb-20">
+        <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
+          <div className="flex justify-center items-center w-full mt-20">
             <SearchBar />
           </div>
+          {chats.length === 0 && <ChatPanel />}
         </div>
       </div>
       <Button

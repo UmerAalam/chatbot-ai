@@ -10,13 +10,22 @@ function HomePage() {
     navigate({ to: "/chatpage" });
   };
   return (
-    <div className="w-full h-screen bg-black relative">
+    <div
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleSearchBtn();
+        }
+      }}
+      className="w-full h-screen bg-black relative"
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.4),_transparent_40%)]"></div>
       <div className="flex flex-col gap-3 justify-center items-center w-full h-full">
         <ChatPanel />
-        <SearchBar searchBtn={handleSearchBtn} />
+        <SearchBar />
       </div>
       <Button
+        onClick={handleSearchBtn}
         className={`absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`}
       >
         <FaArrowRight className="text-white/80" />

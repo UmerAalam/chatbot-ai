@@ -30,7 +30,9 @@ function ChatPage() {
           {renderChatSections}
         </div>
         <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
-          <div className="flex justify-center items-center w-full mt-20">
+          <div
+            className={`flex justify-center items-center w-full mt-20 ${chats.length > 0 && "mb-20"}`}
+          >
             <SearchBar />
           </div>
           {chats.length === 0 && <ChatPanel />}

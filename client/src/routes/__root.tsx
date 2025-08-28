@@ -2,6 +2,10 @@ import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import appCss from "@/styles/app.css?url";
 import { Provider } from "react-redux";
 import { store } from "../app/store/store";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -37,7 +41,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         </style>
       </head>
       <body>
-        <Provider store={store}>{children}</Provider>
+        <QueryClientProvider client={queryClient}>
+          <Provider store={store}>{children}</Provider>
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>

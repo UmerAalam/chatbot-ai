@@ -2,29 +2,22 @@ import { useAppDispatch } from "src/app/hooks/hook";
 import { Button } from "@/components/ui/button";
 import aiIcon from "../../public/icons8-ai.svg";
 import { FaArrowRight } from "react-icons/fa";
-import { useRef, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { addAnswerToChat, addPromptToChat } from "src/app/slices/chatSlice";
-import axios from "axios";
+import { usePromptResult } from "src/modules/openaiQuery";
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   searchBtn?: (query: string) => void;
 }
-interface Data {
-  data: {
-    text: string;
-  };
-}
-const getData = async () => {
-  const data: Data = await axios.get("/api/lorem");
-  return data.data;
-};
 function SearchBar({ searchBtn, ...rest }: Props) {
   const [multiLine, setMultiLine] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const { data } = usePromptResult({ prompt });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dispatch = useAppDispatch();
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  console.log(data);
+  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     if (textareaRef.current) {
       const { scrollHeight } = textareaRef.current;
       const computedLineHeight = parseInt(
@@ -33,19 +26,17 @@ function SearchBar({ searchBtn, ...rest }: Props) {
       );
       const lines = Math.floor(scrollHeight / computedLineHeight);
       setMultiLine(lines > 1);
+      setPrompt(event.target.value);
     }
-    setPrompt(event.target.value);
   };
   const fireSearch = async () => {
     const value = prompt;
     if (value.trim() === "") {
       return;
     }
-    setPrompt("");
-    const data = await getData();
-    console.log("Data from API:", data.text);
     dispatch(addPromptToChat(prompt));
-    dispatch(addAnswerToChat(data.text));
+    dispatch(addAnswerToChat("Answer Here"));
+    setPrompt("");
     searchBtn && searchBtn(prompt);
   };
 
@@ -67,11 +58,12 @@ function SearchBar({ searchBtn, ...rest }: Props) {
         <div className="h-6 w-px bg-gray-700/50" />
         <TextareaAutosize
           ref={textareaRef}
-          value={prompt}
           onChange={handleChange}
+          value={prompt}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
+              setPrompt(e.currentTarget.value);
               fireSearch();
             }
           }}

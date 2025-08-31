@@ -4,7 +4,7 @@ import { serve } from "@hono/node-server";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import "dotenv/config";
-import { openaiRouter } from "./modules/openaiRoute";
+import { openaiRoute } from "./modules/openaiRoute";
 
 const app = new Hono()
   .use(logger())
@@ -16,8 +16,10 @@ const app = new Hono()
       allowHeaders: ["*"],
     }),
   )
-  .route("/api", openaiRouter);
+  .route("/api", openaiRoute);
+
 export type AppType = typeof app;
+
 serve(
   {
     fetch: app.fetch,

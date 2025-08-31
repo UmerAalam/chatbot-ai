@@ -13,10 +13,10 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 function SearchBar({ searchBtn, ...rest }: Props) {
   const [multiLine, setMultiLine] = useState(false);
   const [prompt, setPrompt] = useState("");
-  const { data } = usePromptResult({ prompt });
+  const { data } = usePromptResult(prompt);
+  console.log(data);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dispatch = useAppDispatch();
-  console.log(data);
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     if (textareaRef.current) {
       const { scrollHeight } = textareaRef.current;
@@ -35,7 +35,9 @@ function SearchBar({ searchBtn, ...rest }: Props) {
       return;
     }
     dispatch(addPromptToChat(prompt));
-    dispatch(addAnswerToChat("Answer Here"));
+    if (data !== undefined) {
+      dispatch(addAnswerToChat(data));
+    }
     setPrompt("");
     searchBtn && searchBtn(prompt);
   };

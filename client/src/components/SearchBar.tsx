@@ -13,7 +13,8 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 function SearchBar({ searchBtn, ...rest }: Props) {
   const [multiLine, setMultiLine] = useState(false);
   const [prompt, setPrompt] = useState("");
-  const { data } = usePromptResult(prompt);
+  const [promptValue, setPromptValue] = useState("");
+  const { data, isPending } = usePromptResult(promptValue);
   console.log(data);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dispatch = useAppDispatch();
@@ -29,15 +30,22 @@ function SearchBar({ searchBtn, ...rest }: Props) {
       setPrompt(event.target.value);
     }
   };
+  const addAnswer = async () => {
+    if (data !== undefined) {
+      console.log(data);
+      dispatch(addAnswerToChat(data.content));
+    }
+  };
+  if (!isPending) {
+    addAnswer();
+  }
   const fireSearch = async () => {
     const value = prompt;
     if (value.trim() === "") {
       return;
     }
     dispatch(addPromptToChat(prompt));
-    if (data !== undefined) {
-      dispatch(addAnswerToChat(data));
-    }
+    setPromptValue(prompt);
     setPrompt("");
     searchBtn && searchBtn(prompt);
   };

@@ -11,17 +11,16 @@ const openai = new OpenAI({
     "X-Title": "chatbot-ai",
   },
 });
-console.log(process.env.OPENROUTER_API_KEY);
 export const openaiRoute = new Hono()
   .basePath("result")
   .post("/", zValidator("json", promptSchema), async (c) => {
-    const body = await c.req.json();
+    const { prompt } = await c.req.json();
     const completion = await openai.chat.completions.create({
       model: "deepseek/deepseek-r1:free",
       messages: [
         {
           role: "user",
-          content: "What is the meaning of life?",
+          content: prompt,
         },
       ],
     });

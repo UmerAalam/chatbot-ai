@@ -1,4 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 interface Data {
   role: string;
@@ -7,8 +9,6 @@ interface Data {
   reasoning: string;
 }
 
-import axios from "axios";
-import { useEffect, useState } from "react";
 const getPromptResult = (prompt: string) => {
   const [enabled, setEnabled] = useState(false);
   useEffect(() => {

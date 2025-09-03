@@ -38,11 +38,11 @@ function ChatPage() {
           {chats.length === 0 && <ChatPanel />}
         </div>
       </div>
-      <Button
-        className={`absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`}
-      >
-        <FaArrowRight className="text-white/80" />
-      </Button>
+      {/* <Button */}
+      {/*   className={`absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`} */}
+      {/* > */}
+      {/*   <FaArrowRight className="text-white/80" /> */}
+      {/* </Button> */}
     </div>
   );
 }

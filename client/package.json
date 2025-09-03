@@ -10,6 +10,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.9",
+    "@ai-sdk/openai": "^2.0.23",
+    "@ai-sdk/react": "^2.0.30",
     "@radix-ui/react-slot": "^1.2.3",
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/postcss": "^4.1.12",
@@ -21,6 +24,7 @@
     "@tanstack/react-router-ssr-query": "^1.131.7",
     "@tanstack/react-start": "^1.131.7",
     "@tanstack/router-plugin": "^1.131.28",
+    "ai": "^5.0.29",
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -35,6 +39,7 @@
     "react-spinners": "^0.17.0",
     "react-textarea-autosize": "^8.5.9",
     "redux": "^5.0.1",
+    "remark": "^15.0.1",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.12",
     "vite-tsconfig-paths": "^5.1.4",

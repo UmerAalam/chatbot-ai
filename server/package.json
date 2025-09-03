@@ -4,8 +4,10 @@
     "server": "bun run --hot src/server.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.9",
     "@hono/node-server": "^1.19.0",
     "@hono/zod-validator": "^0.7.2",
+    "ai": "^5.0.29",
     "axios": "^1.11.0",
     "dotenv": "^17.2.1",
     "hono": "^4.9.4",

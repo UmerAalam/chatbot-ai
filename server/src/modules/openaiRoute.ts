@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { promptSchema } from "./openai.dto";
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { generateText } from "ai";
+import { generateText, streamText } from "ai";
 
 const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,

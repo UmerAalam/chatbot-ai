@@ -4,9 +4,10 @@ import aiIcon from "../../public/icons8-ai.svg";
 import { FaArrowRight } from "react-icons/fa";
 import { ChangeEvent, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import { addPromptToChat } from "src/app/slices/chatSlice";
+import { addAnswerToChat, addPromptToChat } from "src/app/slices/chatSlice";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { usePromptResult } from "src/modules/openaiQuery";
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   searchBtn?: (query: string) => void;
@@ -18,10 +19,10 @@ function SearchBar({ ...rest }: Props) {
   const [promptValue, setPromptValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dispatch = useAppDispatch();
-  const { messages, sendMessage } = useChat({
+  const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/result",
-      body: { prompt },
+      body: { prompt: "hi" },
     }),
   });
   console.log(messages);
@@ -43,29 +44,13 @@ function SearchBar({ ...rest }: Props) {
       return;
     }
     dispatch(addPromptToChat(prompt));
+    dispatch(addAnswerToChat(messages.toString()));
+    sendMessage({ text: prompt });
     setPromptValue(prompt);
     setPrompt("");
   };
-
   return (
     <>
-      <div className="absolute text-white top-5 left-5 rounded-2xl bottom-5 h-auto w-1/3 bg-gray-700/50">
-        {messages.map((message) => (
-          <div key={message.id}>
-            {message.role === "user" ? "User: " : "AI: "}
-            {message.parts.map((part, index) => {
-              // text parts:
-              if (part.type === "text") {
-                return <div key={index}>{part.text}</div>;
-              }
-              // reasoning parts:
-              if (part.type === "reasoning") {
-                return <pre key={index}>{part.text}</pre>;
-              }
-            })}
-          </div>
-        ))}
-      </div>
       <div
         {...rest}
         className={`w-[40%] ${multiLine ? "h-auto" : "h-12"} rounded-2xl bg-gray-700/20 backdrop-blur-sm border-2 border-transparent hover:border-white/20`}
@@ -92,6 +77,7 @@ function SearchBar({ ...rest }: Props) {
                 fireSearch();
               }
             }}
+            disabled={status !== "ready"}
             className="resize-none w-[80%] h-auto max-h-40 leading-8 border-none outline-none text-left placeholder:text-left [&::-webkit-scrollbar]:hidden"
             placeholder="Ask anything"
             maxRows={100}

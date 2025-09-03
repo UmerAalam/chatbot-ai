@@ -2,13 +2,9 @@ import { useAppDispatch } from "src/app/hooks/hook";
 import { Button } from "@/components/ui/button";
 import aiIcon from "../../public/icons8-ai.svg";
 import { FaArrowRight } from "react-icons/fa";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import { addAnswerToChat, addPromptToChat } from "src/app/slices/chatSlice";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { usePromptResult } from "src/modules/openaiQuery";
-import useChatStream from "@magicul/react-chat-stream";
+import { addPromptToChat } from "src/app/slices/chatSlice";
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   searchBtn?: (prompt: string) => void;
 }
@@ -16,7 +12,6 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 function SearchBar({ searchBtn, ...rest }: Props) {
   const [multiLine, setMultiLine] = useState(false);
   const [prompt, setPrompt] = useState("");
-  const [promptValue, setPromptValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dispatch = useAppDispatch();
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -38,7 +33,6 @@ function SearchBar({ searchBtn, ...rest }: Props) {
     }
     searchBtn && searchBtn(prompt);
     dispatch(addPromptToChat(prompt));
-    setPromptValue(prompt);
     setPrompt("");
   };
   return (

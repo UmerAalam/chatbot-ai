@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
-import { useAppSelector } from "src/app/hooks/hook";
-import { Chat } from "src/app/slices/chatSlice";
+import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
+import { addAnswerToChat, Chat } from "src/app/slices/chatSlice";
 import AnswerPrompt from "src/components/AnswerPrompt";
 import ChatPanel from "src/components/ChatPanel";
 import PromptSection from "src/components/PromptSection";
@@ -10,7 +10,7 @@ import SearchBar from "src/components/SearchBar";
 
 function ChatPage() {
   const chats: Chat[] = useAppSelector((state) => state.chats);
-  console.log("chats in chatpage:", chats);
+  const dispatch = useAppDispatch();
   const [text, setText] = useState("");
 
   async function streamAnswer(prompt: string, onChunk: (s: string) => void) {
@@ -25,13 +25,12 @@ function ChatPage() {
     const decoder = new TextDecoder();
     while (true) {
       const { value, done } = await reader.read();
-      console.log(value);
       if (done) break;
+      dispatch(addAnswerToChat(text));
       onChunk(decoder.decode(value, { stream: true }));
     }
   }
   const handleSearchBtn = (prompt: string) => {
-    console.log("search");
     setText("");
     streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
   };
@@ -63,11 +62,11 @@ function ChatPage() {
           {chats.length === 0 && <ChatPanel />}
         </div>
       </div>
-      {/* <Button */}
-      {/*   className={`absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`} */}
-      {/* > */}
-      {/*   <FaArrowRight className="text-white/80" /> */}
-      {/* </Button> */}
+      <Button
+        className={`absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`}
+      >
+        <FaArrowRight className="text-white/80" />
+      </Button>
     </div>
   );
 }

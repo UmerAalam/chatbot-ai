@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
 import { useAppSelector } from "src/app/hooks/hook";
 import { Chat } from "src/app/slices/chatSlice";
@@ -10,6 +11,30 @@ import SearchBar from "src/components/SearchBar";
 function ChatPage() {
   const chats: Chat[] = useAppSelector((state) => state.chats);
   console.log("chats in chatpage:", chats);
+  const [text, setText] = useState("");
+
+  async function streamAnswer(prompt: string, onChunk: (s: string) => void) {
+    const res = await fetch("/api/result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+    if (!res.body) throw new Error("No body");
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      const { value, done } = await reader.read();
+      console.log(value);
+      if (done) break;
+      onChunk(decoder.decode(value, { stream: true }));
+    }
+  }
+  const handleSearchBtn = (prompt: string) => {
+    console.log("search");
+    setText("");
+    streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
+  };
   const renderChatSections = chats.map((chat, index) => {
     return (
       <div key={index} className="flex flex-col gap-2 w-auto h-auto">
@@ -17,7 +42,7 @@ function ChatPage() {
           <PromptSection prompt={chat.prompt} />
         </div>
         <div className="flex justify-start">
-          <AnswerPrompt answer={chat.answer} />
+          <AnswerPrompt answer={text} />
         </div>
       </div>
     );
@@ -33,7 +58,7 @@ function ChatPage() {
           <div
             className={`flex justify-center items-center w-full mt-20 ${chats.length > 0 && "mb-20"}`}
           >
-            <SearchBar />
+            <SearchBar searchBtn={(prompt) => handleSearchBtn(prompt)} />
           </div>
           {chats.length === 0 && <ChatPanel />}
         </div>

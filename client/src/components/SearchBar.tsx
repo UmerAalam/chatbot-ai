@@ -2,30 +2,23 @@ import { useAppDispatch } from "src/app/hooks/hook";
 import { Button } from "@/components/ui/button";
 import aiIcon from "../../public/icons8-ai.svg";
 import { FaArrowRight } from "react-icons/fa";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { addAnswerToChat, addPromptToChat } from "src/app/slices/chatSlice";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { usePromptResult } from "src/modules/openaiQuery";
-
+import useChatStream from "@magicul/react-chat-stream";
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
-  searchBtn?: (query: string) => void;
+  searchBtn?: (prompt: string) => void;
 }
 
-function SearchBar({ ...rest }: Props) {
+function SearchBar({ searchBtn, ...rest }: Props) {
   const [multiLine, setMultiLine] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [promptValue, setPromptValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dispatch = useAppDispatch();
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/result",
-      body: { prompt: "hi" },
-    }),
-  });
-  console.log(messages);
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     if (textareaRef.current) {
       const { scrollHeight } = textareaRef.current;
@@ -43,9 +36,8 @@ function SearchBar({ ...rest }: Props) {
     if (value.trim() === "") {
       return;
     }
+    searchBtn && searchBtn(prompt);
     dispatch(addPromptToChat(prompt));
-    dispatch(addAnswerToChat(messages.toString()));
-    sendMessage({ text: prompt });
     setPromptValue(prompt);
     setPrompt("");
   };
@@ -77,7 +69,6 @@ function SearchBar({ ...rest }: Props) {
                 fireSearch();
               }
             }}
-            disabled={status !== "ready"}
             className="resize-none w-[80%] h-auto max-h-40 leading-8 border-none outline-none text-left placeholder:text-left [&::-webkit-scrollbar]:hidden"
             placeholder="Ask anything"
             maxRows={100}

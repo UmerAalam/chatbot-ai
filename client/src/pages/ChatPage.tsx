@@ -19,11 +19,21 @@ interface Data {
 }
 
 function ChatPage() {
+  const [isOpen, setIsOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const tlRef = useRef<gsap.core.Timeline | null>(null);
   const chats: Chat[] = useAppSelector((state) => state.chats);
   const dispatch = useAppDispatch();
   const [text, setText] = useState("");
-  const [showBar, setShowBar] = useState(false);
-  const chatPanelRef = useRef<HTMLDivElement | null>(null);
+  useGSAP(() => {
+    gsap.set(panelRef.current, { xPercent: 0, autoAlpha: 0 });
+    tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
+      xPercent: 0,
+      autoAlpha: 1,
+      duration: 0.45,
+      ease: "elastic",
+    });
+  }, []);
   async function streamAnswer(prompt: string, onChunk: (s: string) => void) {
     const res = await fetch("/api/result", {
       method: "POST",
@@ -47,31 +57,15 @@ function ChatPage() {
     setText(answer.data.text);
     // streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
   };
-  const handleChatPanelShow = () => {
-    setShowBar(!showBar);
-    gsap.fromTo(
-      "#chat-panel",
-      {
-        width: "15%",
-        duration: 1,
-      },
-      {
-        width: "24%",
-      },
-    );
-  };
-  const handleChatPanelHide = () => {
-    gsap.fromTo(
-      "#chat-panel",
-      {
-        width: "24%",
-        duration: 1,
-      },
-      {
-        width: "0%",
-      },
-    );
-    setShowBar(!showBar);
+  const handleChatPanel = () => {
+    const tl = tlRef.current!;
+    if (!isOpen) {
+      tl.play(0);
+      setIsOpen(true);
+    } else {
+      tl.reverse();
+      setIsOpen(false);
+    }
   };
   const renderChatSections = chats.map((chat, index) => {
     return (
@@ -87,16 +81,6 @@ function ChatPage() {
   });
   return (
     <div className="w-full flex flex-row h-full min-h-screen bg-black relative">
-      {!showBar && (
-        <Button
-          onClick={() => handleChatPanelShow()}
-          id="arrow-Btn"
-          className={`absolute top-5 left-5 z-1 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`}
-        >
-          <FaArrowRight className="text-white/80" />
-        </Button>
-      )}
-      <ChatsBar id="chat-panel" handleBtn={() => handleChatPanelHide()} />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.4),_transparent_40%)]"></div>
       <div className="flex flex-col gap-3 justify-center items-center w-full h-full">
         <div className="w-full px-50 flex flex-col gap-5 mt-20 justify-end">
@@ -108,9 +92,26 @@ function ChatPage() {
           >
             <SearchBar searchBtn={(prompt) => handleSearchBtn(prompt)} />
           </div>
-          {chats.length === 0 && <ChatPanel />}
+          <ChatPanel />
         </div>
       </div>
+      {!isOpen && (
+        <Button
+          onClick={handleChatPanel}
+          id="arrow-Btn"
+          className="absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl"
+        >
+          <FaArrowRight className="text-white/80" />
+        </Button>
+      )}
+      <aside
+        ref={panelRef}
+        id="chat-panel"
+        className="fixed left-0 top-0 w-full pointer-events-auto"
+        aria-hidden={!isOpen}
+      >
+        <ChatsBar handleBtn={handleChatPanel} />
+      </aside>
     </div>
   );
 }

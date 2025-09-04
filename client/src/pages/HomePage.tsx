@@ -56,16 +56,6 @@ function HomePage() {
         <ChatPanel />
         <SearchBar />
       </div>
-      {!showBar && (
-        <Button
-          id="arrow-Btn"
-          onClick={() => setShowBar(!showBar)}
-          className={`absolute bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`}
-        >
-          <FaArrowRight className="text-white/80" />
-        </Button>
-      )}
-      {showBar && <ChatsBar />}
     </div>
   );
 }

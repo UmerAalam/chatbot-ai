@@ -7,6 +7,7 @@ import AnswerPrompt from "src/components/AnswerPrompt";
 import ChatPanel from "src/components/ChatPanel";
 import PromptSection from "src/components/PromptSection";
 import SearchBar from "src/components/SearchBar";
+import axios from "axios";
 
 function ChatPage() {
   const chats: Chat[] = useAppSelector((state) => state.chats);
@@ -29,9 +30,11 @@ function ChatPage() {
       onChunk(decoder.decode(value, { stream: true }));
     }
   }
-  const handleSearchBtn = (prompt: string) => {
+  const handleSearchBtn = async (prompt: string) => {
     setText("");
-    streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
+    const answer = await axios.post("/api/result", { prompt });
+    dispatch(addAnswerToChat(answer.data));
+    // streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
   };
   const renderChatSections = chats.map((chat, index) => {
     return (

@@ -9,6 +9,12 @@ import PromptSection from "src/components/PromptSection";
 import SearchBar from "src/components/SearchBar";
 import axios from "axios";
 
+interface Data {
+  data: {
+    text: string;
+  };
+}
+
 function ChatPage() {
   const chats: Chat[] = useAppSelector((state) => state.chats);
   const dispatch = useAppDispatch();
@@ -32,8 +38,8 @@ function ChatPage() {
   }
   const handleSearchBtn = async (prompt: string) => {
     setText("");
-    const answer = await axios.post("/api/result", { prompt });
-    dispatch(addAnswerToChat(answer.data));
+    const answer: Data = await axios.post("/api/result", { prompt });
+    setText(answer.data.text);
     // streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
   };
   const renderChatSections = chats.map((chat, index) => {

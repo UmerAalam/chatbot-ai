@@ -41,7 +41,6 @@ function SearchBar({ searchBtn, ...rest }: Props) {
     dispatch(addPromptToChat(prompt));
     setPrompt("");
   };
-  console.log("multiLine", multiLine);
   return (
     <>
       <div

@@ -10,6 +10,7 @@ function CopyToClipBoard({ textToCopy, ...rest }: Props) {
   const handleCopyClick = async () => {
     try {
       await navigator.clipboard.writeText(textToCopy);
+      console.log(textToCopy);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
@@ -25,7 +26,7 @@ function CopyToClipBoard({ textToCopy, ...rest }: Props) {
         }
       }}
     >
-      {isCopied ? <LuCopy /> : <LuCopyCheck />}
+      {isCopied ? <LuCopyCheck size={18} /> : <LuCopy size={18} />}
     </div>
   );
 }

@@ -65,6 +65,13 @@ function SearchBar({ searchBtn, ...rest }: Props) {
             placeholder="Ask anything"
             onChange={(e) => setPrompt(e.target.value)}
             onHeightChange={onHeightChange}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                setPrompt(e.currentTarget.value);
+                fireSearch();
+              }
+            }}
             minRows={1}
             maxRows={100}
             className="resize-none w-[80%] h-auto max-h-40 leading-8 border-none outline-none text-left placeholder:text-left p-0 overflow-y-auto

@@ -26,12 +26,12 @@ function ChatPage() {
   const dispatch = useAppDispatch();
   const [text, setText] = useState("");
   useGSAP(() => {
-    gsap.set(panelRef.current, { xPercent: 0, autoAlpha: 0 });
+    gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
       xPercent: 0,
       autoAlpha: 1,
       duration: 0.45,
-      ease: "elastic",
+      ease: "power1",
     });
   }, []);
   async function streamAnswer(prompt: string, onChunk: (s: string) => void) {

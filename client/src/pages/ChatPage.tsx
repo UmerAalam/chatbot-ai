@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { FaArrowRight } from "react-icons/fa";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addAnswerToChat, Chat } from "src/app/slices/chatSlice";
 import AnswerPrompt from "src/components/AnswerPrompt";
@@ -9,6 +9,8 @@ import PromptSection from "src/components/PromptSection";
 import SearchBar from "src/components/SearchBar";
 import axios from "axios";
 import ChatsBar from "src/components/ChatsBar";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 interface Data {
   data: {
@@ -21,7 +23,7 @@ function ChatPage() {
   const dispatch = useAppDispatch();
   const [text, setText] = useState("");
   const [showBar, setShowBar] = useState(false);
-
+  const chatPanelRef = useRef<HTMLDivElement | null>(null);
   async function streamAnswer(prompt: string, onChunk: (s: string) => void) {
     const res = await fetch("/api/result", {
       method: "POST",
@@ -45,6 +47,32 @@ function ChatPage() {
     setText(answer.data.text);
     // streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
   };
+  const handleChatPanelShow = () => {
+    setShowBar(!showBar);
+    gsap.fromTo(
+      "#chat-panel",
+      {
+        width: "15%",
+        duration: 1,
+      },
+      {
+        width: "24%",
+      },
+    );
+  };
+  const handleChatPanelHide = () => {
+    gsap.fromTo(
+      "#chat-panel",
+      {
+        width: "24%",
+        duration: 1,
+      },
+      {
+        width: "0%",
+      },
+    );
+    setShowBar(!showBar);
+  };
   const renderChatSections = chats.map((chat, index) => {
     return (
       <div key={index} className="flex flex-col gap-2 w-auto h-auto">
@@ -58,7 +86,17 @@ function ChatPage() {
     );
   });
   return (
-    <div className="w-full h-full min-h-screen bg-black relative">
+    <div className="w-full flex flex-row h-full min-h-screen bg-black relative">
+      {!showBar && (
+        <Button
+          onClick={() => handleChatPanelShow()}
+          id="arrow-Btn"
+          className={`absolute top-5 left-5 z-1 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`}
+        >
+          <FaArrowRight className="text-white/80" />
+        </Button>
+      )}
+      <ChatsBar id="chat-panel" handleBtn={() => handleChatPanelHide()} />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.4),_transparent_40%)]"></div>
       <div className="flex flex-col gap-3 justify-center items-center w-full h-full">
         <div className="w-full px-50 flex flex-col gap-5 mt-20 justify-end">
@@ -73,16 +111,6 @@ function ChatPage() {
           {chats.length === 0 && <ChatPanel />}
         </div>
       </div>
-      {!showBar && (
-        <Button
-          id="arrow-Btn"
-          onClick={() => setShowBar(!showBar)}
-          className={`absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`}
-        >
-          <FaArrowRight className="text-white/80" />
-        </Button>
-      )}
-      {showBar && <ChatsBar handleBtn={() => setShowBar(!showBar)} />}
     </div>
   );
 }

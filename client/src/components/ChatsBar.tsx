@@ -11,11 +11,15 @@ import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
 }
-interface Folder {
-  name: string;
-}
 function ChatsBar({ handleBtn, ...rest }: Props) {
-  const [chatFolders, setChatFolders] = useState([]);
+  const [folders, setFolders] = useState<string[]>([
+    "Work Folder",
+    "Personal Folder",
+    "Sports Folder",
+  ]);
+  const handleFolderSubmit = () => {
+    setFolders((prev) => [...prev, "Work Work"]);
+  };
   return (
     <div
       {...rest}
@@ -45,16 +49,18 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
         <div className="text-white w-full px-2.5 flex justify-between items-center mt-3 font-semibold">
           Folders
           <IoMdAdd
-            onClick={() => {
-              setChatFolders(chatFolders);
-            }}
+            onClick={handleFolderSubmit}
             className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
             size={24}
           />
         </div>
         <div className="w-full">
-          {chatFolders.map((folder) => {
-            return <ChatFolder name="Work Chats" />;
+          {folders.map((folder) => {
+            return (
+              <div className="w-full py-1.5 h-auto">
+                <ChatFolder name={folder} />
+              </div>
+            );
           })}
         </div>
         <div className="text-white w-full px-2.5 flex justify-between items-center mt-3 font-semibold">

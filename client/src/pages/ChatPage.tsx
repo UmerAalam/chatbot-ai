@@ -12,7 +12,6 @@ function ChatPage() {
   const chats: Chat[] = useAppSelector((state) => state.chats);
   const dispatch = useAppDispatch();
   const [text, setText] = useState("");
-
   async function streamAnswer(prompt: string, onChunk: (s: string) => void) {
     const res = await fetch("/api/result", {
       method: "POST",

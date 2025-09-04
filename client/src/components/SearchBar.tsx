@@ -2,7 +2,7 @@ import { useAppDispatch } from "src/app/hooks/hook";
 import { Button } from "@/components/ui/button";
 import aiIcon from "../../public/icons8-ai.svg";
 import { FaArrowRight } from "react-icons/fa";
-import { ChangeEvent, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { addPromptToChat } from "src/app/slices/chatSlice";
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
@@ -13,19 +13,25 @@ function SearchBar({ searchBtn, ...rest }: Props) {
   const [multiLine, setMultiLine] = useState(false);
   const [prompt, setPrompt] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const oneLineHeightRef = useRef<number | null>(null);
   const dispatch = useAppDispatch();
-  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    if (textareaRef.current) {
-      const { scrollHeight } = textareaRef.current;
-      const computedLineHeight = parseInt(
-        window.getComputedStyle(textareaRef.current).lineHeight,
-        10,
-      );
-      const lines = Math.floor(scrollHeight / computedLineHeight);
-      setMultiLine(lines > 1);
-      setPrompt(event.target.value);
-    }
+
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const prev = el.value;
+    el.value = "x";
+    requestAnimationFrame(() => {
+      oneLineHeightRef.current = el.scrollHeight;
+      el.value = prev;
+    });
+  }, []);
+
+  const onHeightChange = (height: number) => {
+    const base = oneLineHeightRef.current;
+    if (base != null) setMultiLine(height > base + 1);
   };
+
   const fireSearch = async () => {
     const value = prompt;
     if (value.trim() === "") {
@@ -35,15 +41,16 @@ function SearchBar({ searchBtn, ...rest }: Props) {
     dispatch(addPromptToChat(prompt));
     setPrompt("");
   };
+  console.log("multiLine", multiLine);
   return (
     <>
       <div
         {...rest}
-        className={`w-[40%] ${multiLine ? "h-auto" : "h-12"} rounded-2xl bg-gray-700/20 backdrop-blur-sm border-2 border-transparent hover:border-white/20`}
+        className={`w-[40%] ${multiLine ? "h-auto min-h-12" : "h-12"} rounded-2xl bg-gray-700/20 backdrop-blur-sm border-2 border-transparent hover:border-white/20`}
       >
         <div
-          className={`flex min-h-8 flex-row w-full text-white py-2 font-bold justify-center ${
-            multiLine ? "items-end" : "items-center"
+          className={`flex flex-row w-full text-white font-bold justify-center ${
+            multiLine ? "items-end mb-2" : "min-h-8 items-center h-full"
           } gap-3`}
         >
           <img
@@ -54,18 +61,20 @@ function SearchBar({ searchBtn, ...rest }: Props) {
           <div className="h-6 w-px bg-gray-700/50" />
           <TextareaAutosize
             ref={textareaRef}
-            onChange={handleChange}
             value={prompt}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                setPrompt(e.currentTarget.value);
-                fireSearch();
-              }
-            }}
-            className="resize-none w-[80%] h-auto max-h-40 leading-8 border-none outline-none text-left placeholder:text-left [&::-webkit-scrollbar]:hidden"
             placeholder="Ask anything"
+            onChange={(e) => setPrompt(e.target.value)}
+            onHeightChange={onHeightChange}
+            minRows={1}
             maxRows={100}
+            className="resize-none w-[80%] h-auto max-h-40 leading-8 border-none outline-none text-left placeholder:text-left p-0 overflow-y-auto
+  [&::-webkit-scrollbar]:w-2
+  [&::-webkit-scrollbar-track]:bg-gray-700/20
+  [&::-webkit-scrollbar-track]:rounded-2xl
+  [&::-webkit-scrollbar-thumb]:bg-gray-700/50
+  [&::-webkit-scrollbar-thumb]:rounded-2xl
+  [&::-webkit-scrollbar-track]:mt-2
+            "
           />
           <div className="h-6 w-px bg-gray-700/50" />
           <Button

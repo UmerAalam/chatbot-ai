@@ -8,6 +8,7 @@ import ChatPanel from "src/components/ChatPanel";
 import PromptSection from "src/components/PromptSection";
 import SearchBar from "src/components/SearchBar";
 import axios from "axios";
+import ChatsBar from "src/components/ChatsBar";
 
 interface Data {
   data: {
@@ -19,6 +20,8 @@ function ChatPage() {
   const chats: Chat[] = useAppSelector((state) => state.chats);
   const dispatch = useAppDispatch();
   const [text, setText] = useState("");
+  const [showBar, setShowBar] = useState(false);
+
   async function streamAnswer(prompt: string, onChunk: (s: string) => void) {
     const res = await fetch("/api/result", {
       method: "POST",
@@ -70,11 +73,16 @@ function ChatPage() {
           {chats.length === 0 && <ChatPanel />}
         </div>
       </div>
-      <Button
-        className={`absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`}
-      >
-        <FaArrowRight className="text-white/80" />
-      </Button>
+      {!showBar && (
+        <Button
+          id="arrow-Btn"
+          onClick={() => setShowBar(!showBar)}
+          className={`absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl`}
+        >
+          <FaArrowRight className="text-white/80" />
+        </Button>
+      )}
+      {showBar && <ChatsBar handleBtn={() => setShowBar(!showBar)} />}
     </div>
   );
 }

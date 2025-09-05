@@ -88,11 +88,11 @@ function ChatPage() {
         </div>
         <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
           <div
-            className={`flex justify-center items-center w-full mt-20 ${chats.length > 0 && "mb-20"}`}
+            className={`flex justify-center items-center w-full mt-10 ${chats.length > 0 && "mb-20"}`}
           >
             <SearchBar searchBtn={(prompt) => handleSearchBtn(prompt)} />
           </div>
-          <ChatPanel />
+          {chats.length === 0 && <ChatPanel />}
         </div>
       </div>
       {!isOpen && (

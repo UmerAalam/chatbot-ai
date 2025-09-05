@@ -14,6 +14,7 @@
     "@ai-sdk/openai": "^2.0.23",
     "@ai-sdk/react": "^2.0.30",
     "@gsap/react": "^2.1.2",
+    "@radix-ui/react-slot": "^1.2.3",
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/postcss": "^4.1.12",
     "@tailwindcss/vite": "^4.0.6",

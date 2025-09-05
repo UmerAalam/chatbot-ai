@@ -11,6 +11,7 @@ import axios from "axios";
 import ChatsBar from "src/components/ChatsBar";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import AddAlert from "src/components/AddAlert";
 
 interface Data {
   data: {
@@ -81,6 +82,7 @@ function ChatPage() {
   });
   return (
     <div className="w-full flex flex-row h-full min-h-screen bg-black relative">
+      <AddAlert />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.4),_transparent_40%)]"></div>
       <div className="flex flex-col gap-3 justify-center items-center w-full h-full">
         <div className="w-full px-50 flex flex-col gap-5 mt-20 justify-end">

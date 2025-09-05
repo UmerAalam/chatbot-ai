@@ -13,7 +13,6 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 }
 function ChatsBar({ handleBtn, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [showAlert, setShowAlert] = useState(false);
   const [folders, setFolders] = useState<string[]>([
     "Work Folder",
     "Personal Folder",

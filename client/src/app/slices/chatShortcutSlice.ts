@@ -30,7 +30,7 @@ export const chatShortcutsSlice = createSlice({
   },
 });
 
-export const { addChat, deleteChat } = chatShortcutsSlice.actions;
+export const { addChat, deleteChat, renameChat } = chatShortcutsSlice.actions;
 
 export const getChatsShortcut = (state: RootState) => state.folders;
 

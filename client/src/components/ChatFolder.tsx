@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { HiDotsHorizontal } from "react-icons/hi";
+import { useAppDispatch } from "src/app/hooks/hook";
+import { deleteFolder } from "src/app/slices/foldersSlice";
 
 function ChatFolder(props: { name: string }) {
   const [showDropdown, setShowDropDown] = useState(false);
+  const dispatch = useAppDispatch();
+  const handleFolderDelete = (folderName: string) => {
+    console.log("Folder Deleted");
+    dispatch(deleteFolder(folderName));
+  };
   return (
     <div className="relative flex items-center text-white/80 font-semibold px-3 w-full h-12 bg-gray-700/50 rounded-2xl border-l-8 border-green-500">
       {showDropdown && (
@@ -12,7 +19,10 @@ function ChatFolder(props: { name: string }) {
               Rename
             </li>
             <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Move</li>
-            <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-b-lg text-red-400 hover:text-red-300">
+            <li
+              onClick={() => handleFolderDelete(props.name)}
+              className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-b-lg text-red-400 hover:text-red-300"
+            >
               Delete
             </li>
           </ul>

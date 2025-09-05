@@ -1,32 +1,41 @@
 import aiIcon from "../../public/icons8-ai.svg";
 import { RiEqualizer2Line } from "react-icons/ri";
 import ChatBarSearch from "./ChatBarSearch";
-import ChatShortcut from "./ChatShortcut";
 import ChatFolder from "./ChatFolder";
 import { IoMdAdd } from "react-icons/io";
 import { HTMLAttributes, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowRight } from "react-icons/fa";
 import AddAlert from "./AddAlert";
+import { addFolder, deleteFolder, Folder } from "src/app/slices/foldersSlice";
+import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
+import {
+  addChat,
+  type ChatsShortcut,
+  deleteChat,
+} from "src/app/slices/chatShortcutSlice";
+import ChatShortcut from "./ChatShortcut";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
 }
 function ChatsBar({ handleBtn, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [folders, setFolders] = useState<string[]>([]);
+  const dispatch = useAppDispatch();
+  const folders: Folder[] = useAppSelector((state) => state.folders);
+  const chatsShortcut: ChatsShortcut[] = useAppSelector(
+    (state) => state.chatsShortcut,
+  );
   const [showFolderAlert, setShowFolderAlert] = useState(false);
   const [showChatAlert, setShowChatAlert] = useState(false);
-  const [chats, setChats] = useState<string[]>([]);
   const handleChatSubmit = (chatName: string) => {
-    setChats((prev) => [...prev, chatName]);
+    dispatch(addChat(chatName));
     setShowChatAlert(false);
   };
   const handleFolderSubmit = (folderName: string) => {
-    setFolders((prev) => [...prev, folderName]);
+    dispatch(addFolder(folderName));
     setShowFolderAlert(false);
   };
-
   const handleCancel = () => {
     setShowChatAlert(false);
     setShowFolderAlert(false);
@@ -95,18 +104,18 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
               folders.map((folder) => {
                 return (
                   <div className="w-full py-1.5 h-auto">
-                    <ChatFolder name={folder} />
+                    <ChatFolder name={folder.name} />
                   </div>
                 );
               })}
             {searchTerm.trim() &&
               folders
                 .filter((folder) =>
-                  folder.toLowerCase().includes(searchTerm.toLowerCase()),
+                  folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
                 )
                 .map((folder) => (
-                  <div className="w-full py-1.5 h-auto" key={folder}>
-                    <ChatFolder name={folder} />
+                  <div className="w-full py-1.5 h-auto" key={folder.name}>
+                    <ChatFolder name={folder.name} />
                   </div>
                 ))}
           </div>
@@ -120,21 +129,21 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
           </div>
           <div className="w-full">
             {!searchTerm.trim() &&
-              chats.map((folder) => {
+              chatsShortcut.map((chat) => {
                 return (
                   <div className="w-full py-1.5 h-auto">
-                    <ChatShortcut name={folder} />
+                    <ChatShortcut name={chat.name} />
                   </div>
                 );
               })}
             {searchTerm.trim() &&
-              chats
-                .filter((folder) =>
-                  folder.toLowerCase().includes(searchTerm.toLowerCase()),
+              chatsShortcut
+                .filter((chat) =>
+                  chat.name.toLowerCase().includes(searchTerm.toLowerCase()),
                 )
-                .map((folder) => (
-                  <div className="w-full py-1.5 h-auto" key={folder}>
-                    <ChatShortcut name={folder} />
+                .map((chat) => (
+                  <div className="w-full py-1.5 h-auto" key={chat.name}>
+                    <ChatShortcut name={chat.name} />
                   </div>
                 ))}
           </div>

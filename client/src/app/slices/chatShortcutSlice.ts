@@ -4,6 +4,10 @@ import type { RootState } from "../store/store";
 export interface ChatsShortcut {
   name: string;
 }
+interface Rename {
+  oldName: string;
+  newName: string;
+}
 const initialState: ChatsShortcut[] = [];
 export const chatShortcutsSlice = createSlice({
   name: "chatShortcuts",
@@ -15,6 +19,13 @@ export const chatShortcutsSlice = createSlice({
     },
     deleteChat: (state, action: PayloadAction<string>) => {
       return state.filter((name) => name.name !== action.payload);
+    },
+    renameChat: (state, action: PayloadAction<Rename>) => {
+      return state.map((chat) =>
+        chat.name === action.payload.oldName
+          ? { ...chat, name: action.payload.newName }
+          : chat,
+      );
     },
   },
 });

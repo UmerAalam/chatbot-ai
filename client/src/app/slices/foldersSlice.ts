@@ -4,6 +4,10 @@ import type { RootState } from "../store/store";
 export interface Folder {
   name: string;
 }
+interface Rename {
+  oldName: string;
+  newName: string;
+}
 const initialState: Folder[] = [];
 export const foldersSlice = createSlice({
   name: "folders",
@@ -16,10 +20,17 @@ export const foldersSlice = createSlice({
     deleteFolder: (state, action: PayloadAction<string>) => {
       return state.filter((name) => name.name !== action.payload);
     },
+    renameFolder: (state, action: PayloadAction<Rename>) => {
+      return state.map((folder) =>
+        folder.name === action.payload.oldName
+          ? { ...folder, name: action.payload.newName }
+          : folder,
+      );
+    },
   },
 });
 
-export const { addFolder, deleteFolder } = foldersSlice.actions;
+export const { addFolder, deleteFolder, renameFolder } = foldersSlice.actions;
 
 export const getFolders = (state: RootState) => state.folders;
 

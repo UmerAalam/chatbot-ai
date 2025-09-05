@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { useAppDispatch } from "src/app/hooks/hook";
-import { deleteFolder } from "src/app/slices/foldersSlice";
+import { deleteFolder, renameFolder } from "src/app/slices/foldersSlice";
 import { FaCheck } from "react-icons/fa";
 
 function ChatFolder(props: { name: string }) {
@@ -42,11 +42,12 @@ function ChatFolder(props: { name: string }) {
         {isRenaming ? (
           <input value={name} onChange={(e) => setName(e.target.value)} />
         ) : (
-          props.name
+          name
         )}
         {isRenaming ? (
           <FaCheck
             onClick={() => {
+              dispatch(renameFolder({ oldName: props.name, newName: name }));
               setIsRenaming(false);
             }}
             className="text-white/80 rounded-full hover:bg-gray-700/70 p-1 cursor-pointer"

@@ -14,7 +14,7 @@ export const chatShortcutsSlice = createSlice({
       state.push({ name: action.payload });
     },
     deleteChat: (state, action: PayloadAction<string>) => {
-      state.filter((name) => name.name === action.payload);
+      return state.filter((name) => name.name !== action.payload);
     },
   },
 });

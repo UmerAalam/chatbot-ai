@@ -14,7 +14,7 @@ export const foldersSlice = createSlice({
       state.push({ name: action.payload });
     },
     deleteFolder: (state, action: PayloadAction<string>) => {
-      state.filter((name) => name.name === action.payload);
+      return state.filter((name) => name.name !== action.payload);
     },
   },
 });

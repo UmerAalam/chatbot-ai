@@ -7,13 +7,9 @@ import { HTMLAttributes, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowRight } from "react-icons/fa";
 import AddAlert from "./AddAlert";
-import { addFolder, deleteFolder, Folder } from "src/app/slices/foldersSlice";
+import { addFolder, Folder } from "src/app/slices/foldersSlice";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
-import {
-  addChat,
-  type ChatsShortcut,
-  deleteChat,
-} from "src/app/slices/chatShortcutSlice";
+import { addChat, type ChatsShortcut } from "src/app/slices/chatShortcutSlice";
 import ChatShortcut from "./ChatShortcut";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
@@ -101,9 +97,9 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
           </div>
           <div className="w-full">
             {!searchTerm.trim() &&
-              folders.map((folder) => {
+              folders.map((folder, index) => {
                 return (
-                  <div className="w-full py-1.5 h-auto">
+                  <div key={index} className="w-full py-1.5 h-auto">
                     <ChatFolder name={folder.name} />
                   </div>
                 );
@@ -113,8 +109,8 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                 .filter((folder) =>
                   folder.name.toLowerCase().includes(searchTerm.toLowerCase()),
                 )
-                .map((folder) => (
-                  <div className="w-full py-1.5 h-auto" key={folder.name}>
+                .map((folder, index) => (
+                  <div className="w-full py-1.5 h-auto" key={index}>
                     <ChatFolder name={folder.name} />
                   </div>
                 ))}

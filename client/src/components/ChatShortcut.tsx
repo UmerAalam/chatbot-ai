@@ -18,7 +18,7 @@ function ChatShortcut(props: { name: string }) {
     setIsRenaming(true);
   };
   return (
-    <div className="relative flex items-center text-white/80 font-semibold px-3 w-full h-12 bg-gray-700/50 rounded-2xl border-l-8 border-white">
+    <div className="relative flex items-center text-white/80 font-semibold px-3 w-full h-12 bg-gray-700/50 rounded-2xl border-l-8 border-white outline-2 outline-transparent hover:outline-white">
       {showDropdown && (
         <div className="absolute right-0 top-10 bg-gray-800 text-white/90 rounded-lg shadow-lg border border-gray-700 w-40 z-10">
           <ul className="flex flex-col text-sm">

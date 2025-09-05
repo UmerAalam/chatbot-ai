@@ -11,7 +11,6 @@ import axios from "axios";
 import ChatsBar from "src/components/ChatsBar";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import AddAlert from "src/components/AddAlert";
 
 interface Data {
   data: {

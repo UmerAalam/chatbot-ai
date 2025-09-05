@@ -18,22 +18,38 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [showFolderAlert, setShowFolderAlert] = useState(false);
   const [showChatAlert, setShowChatAlert] = useState(false);
   const [chats, setChats] = useState<string[]>([]);
-  const handleChatSubmit = () => {
-    setChats((prev) => [...prev, "Work Chat"]);
+  const handleChatSubmit = (chatName: string) => {
+    setChats((prev) => [...prev, chatName]);
+    setShowChatAlert(false);
+  };
+  const handleFolderSubmit = (folderName: string) => {
+    setFolders((prev) => [...prev, folderName]);
+    setShowFolderAlert(false);
   };
 
-  const handleFolderSubmit = () => {
-    setFolders((prev) => [...prev, "Work Work"]);
+  const handleCancel = () => {
+    setShowChatAlert(false);
+    setShowFolderAlert(false);
   };
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
   return (
     <>
-      {/* {showFolderAlert && ( */}
-      {/*   <AddAlert isChat={false} addBtn={handleFolderSubmit} /> */}
-      {/* )} */}
-      {showChatAlert && <AddAlert isChat={true} addBtn={handleChatSubmit} />}
+      {showFolderAlert && (
+        <AddAlert
+          isChat={false}
+          cancelBtn={handleCancel}
+          addBtn={handleFolderSubmit}
+        />
+      )}
+      {showChatAlert && (
+        <AddAlert
+          isChat={true}
+          cancelBtn={handleCancel}
+          addBtn={handleChatSubmit}
+        />
+      )}
       <div
         {...rest}
         className="absolute left-0 top-0 w-1.4 overflow-y-scroll overflow-x-hidden px-3 h-screen bg-transparent

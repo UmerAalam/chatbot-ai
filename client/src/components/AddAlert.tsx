@@ -34,6 +34,7 @@ const AddAlert = ({ addBtn, cancelBtn, isChat = false }: Props) => {
           </button>
           <button
             onClick={() => {
+              if (text.trim() === "") return;
               addBtn && addBtn(text);
               setText("");
             }}

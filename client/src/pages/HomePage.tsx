@@ -1,16 +1,11 @@
 import ChatPanel from "src/components/ChatPanel";
 import SearchBar from "src/components/SearchBar";
-import { FaArrowRight } from "react-icons/fa";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
-import ChatsBar from "src/components/ChatsBar";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { useState } from "react";
 
 function HomePage() {
   const navigate = useNavigate();
-  const [showBar, setShowBar] = useState(false);
   const handleSearchBtn = () => {
     navigate({ to: "/chatpage" });
   };

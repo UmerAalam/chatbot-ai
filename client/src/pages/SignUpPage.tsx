@@ -17,13 +17,15 @@ const SignUpPage = () => {
     });
     return () => subscription.unsubscribe();
   }, []);
-
   const handleSignUp = async () => {
-    await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
     });
+    if (error) {
+      console.error("Error signing in:", error.message);
+      return;
+    }
   };
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };

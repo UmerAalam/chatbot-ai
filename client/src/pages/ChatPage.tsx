@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { FaArrowRight } from "react-icons/fa";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addAnswerToChat, Chat } from "src/app/slices/chatSlice";
 import AnswerPrompt from "src/components/AnswerPrompt";
@@ -11,6 +11,8 @@ import axios from "axios";
 import ChatsBar from "src/components/ChatsBar";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { Session } from "@supabase/supabase-js";
+import { supabase } from "src/supabase-client/supabase-client";
 
 interface Data {
   data: {
@@ -25,6 +27,22 @@ function ChatPage() {
   const chats: Chat[] = useAppSelector((state) => state.chats);
   const dispatch = useAppDispatch();
   const [text, setText] = useState("");
+
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -91,6 +109,9 @@ function ChatPage() {
             className={`flex justify-center items-center w-full mt-10 ${chats.length > 0 && "mb-20"}`}
           >
             <SearchBar searchBtn={(prompt) => handleSearchBtn(prompt)} />
+          </div>
+          <div className="text-white text-2xl font-bold">
+            {session ? "LoggedIn" : "Need To Sign Up"}
           </div>
           {chats.length === 0 && <ChatPanel />}
         </div>

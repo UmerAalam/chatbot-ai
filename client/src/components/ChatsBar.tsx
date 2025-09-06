@@ -66,7 +66,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
       <div
         {...rest}
         className="absolute left-0 top-0 w-1.4 overflow-y-scroll overflow-x-hidden px-3 h-screen bg-transparent
-      [&::-webkit-scrollbar]:w-2
+        [&::-webkit-scrollbar]:w-2
         [&::-webkit-scrollbar-track]:bg-gray-700/20
         [&::-webkit-scrollbar-track]:rounded-2xl
         [&::-webkit-scrollbar-thumb]:bg-gray-700/50

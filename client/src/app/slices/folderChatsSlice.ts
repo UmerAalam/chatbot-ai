@@ -35,17 +35,10 @@ export const folderChatsSlice = createSlice({
           : chat,
       );
     },
-    listChatsByFolderID: (state, action: PayloadAction<string>) => {
-      return state.filter((folder) => folder.folderId === action.payload);
-    },
   },
 });
 
-export const {
-  addChatToFolder,
-  listChatsByFolderID,
-  deleteChatFromFolder,
-  renameChatFromFolder,
-} = folderChatsSlice.actions;
+export const { addChatToFolder, deleteChatFromFolder, renameChatFromFolder } =
+  folderChatsSlice.actions;
 
 export default folderChatsSlice.reducer;

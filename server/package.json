@@ -7,6 +7,7 @@
     "@ai-sdk/anthropic": "^2.0.9",
     "@hono/node-server": "^1.19.0",
     "@hono/zod-validator": "^0.7.2",
+    "@supabase/supabase-js": "^2.57.2",
     "ai": "^5.0.29",
     "axios": "^1.11.0",
     "dotenv": "^17.2.1",

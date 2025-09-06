@@ -16,7 +16,7 @@ const config = defineConfig({
     }),
     tanstackRouter({
       target: "react",
-      autoCodeSplitting: true, // enables the ?tsr-split virtual modules
+      autoCodeSplitting: true,
     }),
     viteReact(),
   ],

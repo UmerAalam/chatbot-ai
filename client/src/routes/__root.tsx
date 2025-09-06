@@ -1,9 +1,7 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-import appCss from "@/styles/app.css?url";
 import { Provider } from "react-redux";
 import { store } from "../app/store/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 const queryClient = new QueryClient();
 
 export const Route = createRootRoute({
@@ -23,7 +21,7 @@ export const Route = createRootRoute({
     links: [
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "../styles.css",
       },
     ],
   }),

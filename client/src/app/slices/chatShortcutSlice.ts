@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 export interface ChatsShortcut {
   id: string;
+  folderId: string;
   name: string;
 }
 interface Rename {
@@ -16,11 +17,15 @@ export const chatShortcutsSlice = createSlice({
   initialState,
   reducers: {
     //Add Functions Here
-    addChat: (state, action: PayloadAction<string>) => {
-      state.push({ id: uuidv4(), name: action.payload });
+    addChat: (state, action: PayloadAction<ChatsShortcut>) => {
+      state.push({
+        id: uuidv4(),
+        folderId: action.payload.folderId,
+        name: action.payload.name,
+      });
     },
-    deleteChat: (state, action: PayloadAction<string>) => {
-      return state.filter((name) => name.id !== action.payload);
+    deleteChat: (state, action: PayloadAction<ChatsShortcut>) => {
+      return state.filter((name) => name.id !== action.payload.id);
     },
     renameChat: (state, action: PayloadAction<Rename>) => {
       return state.map((chat) =>

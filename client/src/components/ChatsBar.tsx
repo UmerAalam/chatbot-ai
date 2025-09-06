@@ -10,6 +10,8 @@ import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addChat, type ChatsShortcut } from "src/app/slices/chatShortcutSlice";
 import ChatShortcut from "./ChatShortcut";
 import FolderChats from "./FolderChats";
+import { addChatToFolder } from "src/app/slices/folderChatsSlice";
+import { Chat } from "src/app/slices/chatSlice";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
@@ -50,7 +52,8 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
         <AddAlert
           isChat={false}
           cancelBtn={handleCancel}
-          addBtn={handleFolderSubmit}
+          chatId=
+          addBtn={() => handleFolderSubmit}
         />
       )}
       {showChatAlert && (

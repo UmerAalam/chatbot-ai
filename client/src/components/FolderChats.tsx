@@ -1,6 +1,4 @@
 import { useAppSelector } from "src/app/hooks/hook";
-import { selectChatsByFolderId } from "src/app/selectors/selectors";
-import { FolderChat } from "src/app/slices/folderChatsSlice";
 import ChatShortcut from "./ChatShortcut";
 
 interface Props {

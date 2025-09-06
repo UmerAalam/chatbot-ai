@@ -1,12 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store/store";
+import { v4 as uuidv4 } from "uuid";
 
 export interface ChatsShortcut {
+  id: string;
   name: string;
 }
 interface Rename {
-  currentName: string;
-  newName: string;
+  chatId: string;
+  name: string;
 }
 const initialState: ChatsShortcut[] = [];
 export const chatShortcutsSlice = createSlice({
@@ -15,15 +17,15 @@ export const chatShortcutsSlice = createSlice({
   reducers: {
     //Add Functions Here
     addChat: (state, action: PayloadAction<string>) => {
-      state.push({ name: action.payload });
+      state.push({ id: uuidv4(), name: action.payload });
     },
     deleteChat: (state, action: PayloadAction<string>) => {
-      return state.filter((name) => name.name !== action.payload);
+      return state.filter((name) => name.id !== action.payload);
     },
     renameChat: (state, action: PayloadAction<Rename>) => {
       return state.map((chat) =>
-        chat.name === action.payload.currentName
-          ? { ...chat, name: action.payload.newName }
+        chat.id === action.payload.chatId
+          ? { ...chat, name: action.payload.name }
           : chat,
       );
     },

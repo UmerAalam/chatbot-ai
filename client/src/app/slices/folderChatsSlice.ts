@@ -7,15 +7,13 @@ export interface FolderChat {
 interface RenameFolderChat {
   folderId: string;
   chatId: string;
-  currentName: string;
-  newName: string;
+  name: string;
 }
 const initialState: FolderChat[] = [];
 export const folderChatsSlice = createSlice({
   name: "chatShortcuts",
   initialState,
   reducers: {
-    //Add Functions Here
     addChatToFolder: (state, action: PayloadAction<FolderChat>) => {
       state.push({
         chatId: action.payload.chatId,
@@ -25,7 +23,7 @@ export const folderChatsSlice = createSlice({
     deleteChatFromFolder: (state, action: PayloadAction<FolderChat>) => {
       return state.filter(
         (folder) =>
-          folder.chatId !== action.payload.chatId &&
+          folder.chatId !== action.payload.chatId ||
           folder.folderId !== action.payload.folderId,
       );
     },
@@ -33,14 +31,21 @@ export const folderChatsSlice = createSlice({
       return state.map((chat) =>
         chat.chatId === action.payload.chatId &&
         chat.folderId === action.payload.folderId
-          ? { ...chat, newName: action.payload.newName }
+          ? { ...chat, newName: action.payload.name }
           : chat,
       );
+    },
+    listChatsByFolderID: (state, action: PayloadAction<string>) => {
+      return state.filter((folder) => folder.folderId === action.payload);
     },
   },
 });
 
-export const { addChatToFolder, deleteChatFromFolder, renameChatFromFolder } =
-  folderChatsSlice.actions;
+export const {
+  addChatToFolder,
+  listChatsByFolderID,
+  deleteChatFromFolder,
+  renameChatFromFolder,
+} = folderChatsSlice.actions;
 
 export default folderChatsSlice.reducer;

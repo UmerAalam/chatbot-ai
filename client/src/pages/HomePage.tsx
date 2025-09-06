@@ -3,12 +3,28 @@ import SearchBar from "src/components/SearchBar";
 import { useNavigate } from "@tanstack/react-router";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { useEffect, useState } from "react";
+import { supabase } from "src/supabase-client/supabase-client";
+import { Session } from "@supabase/supabase-js";
 
 function HomePage() {
   const navigate = useNavigate();
   const handleSearchBtn = () => {
     navigate({ to: "/chatpage" });
   };
+  const [_, setSession] = useState<Session | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   useGSAP(() => {
     gsap.fromTo(
       "#arrow-Btn",

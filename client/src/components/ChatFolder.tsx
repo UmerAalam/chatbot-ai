@@ -5,10 +5,15 @@ import { deleteFolder, renameFolder } from "src/app/slices/foldersSlice";
 import { FaCheck } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 
-function ChatFolder(props: { name: string }) {
+interface Props {
+  id: string;
+  currentName: string;
+}
+
+function ChatFolder({ id, currentName }: Props) {
   const [showDropdown, setShowDropDown] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
-  const [name, setName] = useState(props.name);
+  const [name, setName] = useState(currentName);
   const dispatch = useAppDispatch();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -20,27 +25,25 @@ function ChatFolder(props: { name: string }) {
         setShowDropDown(false);
       }
     };
-
     if (showDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDropdown]);
-  const handleFolderDelete = (folderName: string) => {
+  const handleFolderDelete = (folderID: string) => {
     setShowDropDown(false);
-    dispatch(deleteFolder(folderName));
+    dispatch(deleteFolder(folderID));
   };
   const handleRenaming = () => {
     setShowDropDown(false);
     setIsRenaming(true);
   };
   return (
-    <div className="relative flex items-center text-white/80 font-semibold px-3 w-full h-12 bg-gray-700/50 rounded-2xl border-l-8 border-green-400 outline-2 outline-transparent hover:outline-white">
+    <div className="relative cursor-pointer flex items-center text-white/80 font-semibold px-3 w-full h-12 bg-gray-700/50 rounded-2xl border-l-8 border-green-400 outline-2 outline-transparent hover:outline-white">
       {showDropdown && (
         <div
           ref={dropdownRef}
@@ -55,7 +58,7 @@ function ChatFolder(props: { name: string }) {
             </li>
             <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Move</li>
             <li
-              onClick={() => handleFolderDelete(props.name)}
+              onClick={() => handleFolderDelete(id)}
               className="flex justify-start items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-b-lg text-red-400 hover:text-red-300"
             >
               Delete
@@ -73,7 +76,7 @@ function ChatFolder(props: { name: string }) {
         {isRenaming ? (
           <FaCheck
             onClick={() => {
-              dispatch(renameFolder({ oldName: props.name, newName: name }));
+              dispatch(renameFolder({ id, currentName, newName: name }));
               setIsRenaming(false);
             }}
             className="text-white/80 rounded-full hover:bg-gray-700/70 p-1 cursor-pointer"

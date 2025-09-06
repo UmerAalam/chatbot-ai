@@ -60,7 +60,7 @@ const Avatar = () => {
           </ul>
         </div>
       )}
-      <img src={avatar} className="rounded-full" />
+      {avatar && <img src={avatar} className="rounded-full" />}
     </div>
   );
 };

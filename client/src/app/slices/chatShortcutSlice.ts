@@ -5,7 +5,7 @@ export interface ChatsShortcut {
   name: string;
 }
 interface Rename {
-  oldName: string;
+  currentName: string;
   newName: string;
 }
 const initialState: ChatsShortcut[] = [];
@@ -22,7 +22,7 @@ export const chatShortcutsSlice = createSlice({
     },
     renameChat: (state, action: PayloadAction<Rename>) => {
       return state.map((chat) =>
-        chat.name === action.payload.oldName
+        chat.name === action.payload.currentName
           ? { ...chat, name: action.payload.newName }
           : chat,
       );

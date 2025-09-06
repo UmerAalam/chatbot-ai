@@ -60,6 +60,9 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
           addBtn={handleChatSubmit}
         />
       )}
+      {showChatFolder && showChatAlert && (
+        <AddAlert isChat={true} cancelBtn={handleCancel} />
+      )}
       <div
         {...rest}
         className="absolute left-0 top-0 w-1.4 overflow-y-scroll overflow-x-hidden px-3 h-screen bg-transparent
@@ -88,18 +91,21 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
           <ChatBarSearch searchHandle={handleSearch} />
           <div className="text-white w-full px-2.5 flex justify-between items-center mt-3 font-semibold">
             {showChatFolder ? (
-              <>
+              <div className="flex w-full justify-between items-center">
                 {folderName}
-                <FaArrowLeft
-                  onClick={() => setShowChatFolder(!showChatFolder)}
-                  className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
-                  size={24}
-                />
-                <IoMdAdd
-                  className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
-                  size={24}
-                />
-              </>
+                <div className="flex gap-3 items-center">
+                  <FaArrowLeft
+                    onClick={() => setShowChatFolder(!showChatFolder)}
+                    className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
+                    size={24}
+                  />
+                  <IoMdAdd
+                    onClick={() => setShowChatAlert(true)}
+                    className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
+                    size={24}
+                  />
+                </div>
+              </div>
             ) : (
               <>
                 Folders

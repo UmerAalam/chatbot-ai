@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { useAppDispatch } from "src/app/hooks/hook";
@@ -9,6 +9,27 @@ function ChatShortcut(props: { name: string }) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [name, setName] = useState(props.name);
   const dispatch = useAppDispatch();
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropDown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
   const handleChatDelete = (chatName: string) => {
     setShowDropDown(false);
     dispatch(deleteChat(chatName));
@@ -20,7 +41,10 @@ function ChatShortcut(props: { name: string }) {
   return (
     <div className="relative flex items-center text-white/80 font-semibold px-3 w-full h-12 bg-gray-700/50 rounded-2xl border-l-8 border-white outline-2 outline-transparent hover:outline-white">
       {showDropdown && (
-        <div className="absolute right-0 top-10 bg-gray-800/80 backdrop-blur-2xl text-white/90 rounded-lg shadow-lg border border-gray-700/50 w-40 z-10">
+        <div
+          ref={dropdownRef}
+          className="absolute right-0 top-10 bg-gray-800/80 backdrop-blur-2xl text-white/90 rounded-lg shadow-lg border border-gray-700/50 w-40 z-10"
+        >
           <ul className="flex flex-col text-sm">
             <li
               onClick={handleRenaming}

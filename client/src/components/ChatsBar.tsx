@@ -161,8 +161,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
               </div>
               <div className="w-full">
                 {!searchTerm.trim() &&
-                  chatbarchats?.data !== null &&
-                  chatbarchats?.data.map((chat) => {
+                  chatbarchats?.map((chat) => {
                     return (
                       <div className="w-full py-1.5 h-auto">
                         <ChatShortcut name={chat.chat_name} />
@@ -170,16 +169,18 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                     );
                   })}
                 {searchTerm.trim() &&
-                  chatbarchats?.data !== null &&
-                  chatbarchats?.data
-                    .filter((chat) =>
-                      chat.name
+                  chatbarchats
+                    ?.filter((chat) =>
+                      chat.chat_name
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()),
                     )
                     .map((chat) => (
-                      <div className="w-full py-1.5 h-auto" key={chat.name}>
-                        <ChatShortcut name={chat.name} />
+                      <div
+                        className="w-full py-1.5 h-auto"
+                        key={chat.chat_name}
+                      >
+                        <ChatShortcut name={chat.chat_name} />
                       </div>
                     ))}
               </div>

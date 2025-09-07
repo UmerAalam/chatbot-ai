@@ -5,14 +5,14 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { client } from "src/lib/client";
-import { ChatBarChat } from "src/types/ChatBarChat.types";
+import type { ChatBarChat } from "src/types/ChatBarChat.types";
 
 export const useChatBarChatPost = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (chat: ChatBarChat) => {
-      const res = await client.api.chatbarchat.$post({
+      const res = await client.api.chatbarchat.create.$post({
         json: chat,
       });
       if (!res.ok) {
@@ -33,8 +33,11 @@ const userChatBarChats = (email: string) => {
       const res = await client.api.chatbarchat.$get({
         query: { email },
       });
+      if (!res.ok) {
+        throw new Error("Error Getting ChatBarChats");
+      }
       const data = await res.json();
-      return data;
+      return data.data as ChatBarChat[];
     },
     queryKey: ["chatbarchats"],
     enabled: !!email,

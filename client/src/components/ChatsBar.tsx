@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import ChatShortcut from "./ChatShortcut";
 import FolderChats from "./FolderChats";
 import {
-  // useChatBarChatCreate,
+  useChatBarChatCreate,
   useUserChatBarChats,
 } from "src/query/chatbarchat";
 
@@ -21,7 +21,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const email = localStorage.getItem("email") || "";
   const { data: chatbarchats, isLoading } = useUserChatBarChats(email);
-  // const { mutate: createChat } = useChatBarChatCreate();
+  const { mutate: createChat } = useChatBarChatCreate();
   const dispatch = useAppDispatch();
   const folders: Folder[] = useAppSelector((state) => state.folders);
   const [showFolderAlert, setShowFolderAlert] = useState(false);
@@ -29,10 +29,10 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [showChatFolder, setShowChatFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
   const handleChatSubmit = (text: string) => {
-    // createChat({
-    //   chat_name: text,
-    //   email,
-    // });
+    createChat({
+      chat_name: text,
+      email,
+    });
     setShowChatAlert(false);
   };
   const handleFolderSubmit = () => {

@@ -10,29 +10,25 @@ import type {
   RenameChatBarChat,
 } from "src/types/ChatBarChat.types";
 
-// export const useChatBarChatCreate = () => {
-//   const queryClient = useQueryClient();
-//
-//   const mutation = useMutation({
-//     mutationFn: async (chat: ChatBarChat) => {
-//       console.log("Calling Mutation");
-//       const res = await client.api.chatbarchat.$post({
-//         json: chat,
-//       });
-//
-//       console.log("Called Mutation");
-//       if (!res.ok) {
-//         throw new Error("Error while posting chatbarchat");
-//       }
-//       return res.json();
-//     },
-//     onSuccess: () => {
-//       queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
-//     },
-//   });
-//
-//   return mutation;
-// };
+export const useChatBarChatCreate = () => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: async (chat: ChatBarChat) => {
+      const res = await client.api.chatbarchat.$post({
+        json: chat,
+      });
+      if (!res.ok) {
+        throw new Error("Error while posting chatbarchat");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
+    },
+  });
+
+  return mutation;
+};
 export const useChatBarChatRename = () => {
   const queryClient = useQueryClient();
 
@@ -50,7 +46,6 @@ export const useChatBarChatRename = () => {
       queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
     },
   });
-
   return mutation;
 };
 const userChatBarChats = (email: string) => {

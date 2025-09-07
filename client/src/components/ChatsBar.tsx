@@ -13,7 +13,6 @@ import {
   useChatBarChatCreate,
   useUserChatBarChats,
 } from "src/query/chatbarchat";
-
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
 }

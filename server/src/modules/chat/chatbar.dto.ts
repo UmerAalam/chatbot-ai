@@ -5,7 +5,9 @@ export const chatBarChatSchema = z.object({
   chat_name: z.string().min(1).max(1000),
   email: z.string().max(100).nonempty(),
 });
-
+export const deleteUserChatSchema = z.object({
+  id: z.number().nonnegative(),
+});
 export const userChatBarChatsSchema = z.object({
   email: z.string().max(100).nonempty(),
 });

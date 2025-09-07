@@ -5,8 +5,8 @@ import { logger } from "hono/logger";
 import "dotenv/config";
 import { openaiRoute } from "./modules/openAI/openaiRoute";
 import { chatbarRoute } from "./modules/chat/chatbarRoute";
-
 import { createClient } from "@supabase/supabase-js";
+
 const supabaseUrl = process.env.SUPABASE_URL || "";
 const supabaseKey = process.env.SUPABASE_API_KEY || "";
 

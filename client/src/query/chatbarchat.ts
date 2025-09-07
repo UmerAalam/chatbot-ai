@@ -29,6 +29,24 @@ export const useChatBarChatCreate = () => {
 
   return mutation;
 };
+export const useChatBarChatDelete = () => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await client.api.chatbarchat.$delete({
+        json: { id },
+      });
+      if (!res.ok) {
+        throw new Error("Error while posting chatbarchat");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
+    },
+  });
+  return mutation;
+};
 export const useChatBarChatRename = () => {
   const queryClient = useQueryClient();
 

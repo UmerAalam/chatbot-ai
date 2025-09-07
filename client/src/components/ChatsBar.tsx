@@ -10,8 +10,6 @@ import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addChat, type ChatsShortcut } from "src/app/slices/chatShortcutSlice";
 import ChatShortcut from "./ChatShortcut";
 import FolderChats from "./FolderChats";
-import { addChatToFolder } from "src/app/slices/folderChatsSlice";
-import { Chat } from "src/app/slices/chatSlice";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
@@ -28,7 +26,6 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [showChatFolder, setShowChatFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
   const handleChatSubmit = (chatName: string) => {
-    dispatch(addChat(chatName));
     setShowChatAlert(false);
   };
   const handleFolderSubmit = (folderName: string) => {
@@ -48,21 +45,8 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   };
   return (
     <>
-      {showFolderAlert && (
-        <AddAlert
-          isChat={false}
-          cancelBtn={handleCancel}
-          chatId=
-          addBtn={() => handleFolderSubmit}
-        />
-      )}
-      {showChatAlert && (
-        <AddAlert
-          isChat={true}
-          cancelBtn={handleCancel}
-          addBtn={handleChatSubmit}
-        />
-      )}
+      {showFolderAlert && <AddAlert isChat={false} cancelBtn={handleCancel} />}
+      {showChatAlert && <AddAlert isChat={true} cancelBtn={handleCancel} />}
       {showChatFolder && showChatAlert && (
         <AddAlert isChat={true} cancelBtn={handleCancel} />
       )}

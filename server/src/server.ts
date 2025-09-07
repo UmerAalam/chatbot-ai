@@ -3,7 +3,14 @@ import { serve } from "@hono/node-server";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import "dotenv/config";
-import { openaiRoute } from "./modules/openaiRoute";
+import { openaiRoute } from "./modules/openAI/openaiRoute";
+import { chatbarRoute } from "./modules/chat/chatbarRoute";
+
+import { createClient } from "@supabase/supabase-js";
+const supabaseUrl = process.env.SUPABASE_URL || "";
+const supabaseKey = process.env.SUPABASE_API_KEY || "";
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = new Hono()
   .use(logger())
@@ -15,7 +22,8 @@ const app = new Hono()
       allowHeaders: ["*"],
     }),
   )
-  .route("/api", openaiRoute);
+  .route("/api", openaiRoute)
+  .route("/api", chatbarRoute);
 
 export type AppType = typeof app;
 

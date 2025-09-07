@@ -7,15 +7,18 @@ import { FaArrowLeft } from "react-icons/fa";
 import AddAlert from "./AddAlert";
 import { addFolder, Folder } from "src/app/slices/foldersSlice";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
-import { addChat, type ChatsShortcut } from "src/app/slices/chatShortcutSlice";
+import { type ChatsShortcut } from "src/app/slices/chatShortcutSlice";
 import ChatShortcut from "./ChatShortcut";
 import FolderChats from "./FolderChats";
+import { useChatBarChatPost } from "src/query/chatbarchat";
+import { getUser } from "src/supabase-client/supabase-client";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
 }
 function ChatsBar({ handleBtn, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
+  const email = localStorage.getItem("email") || "";
   const dispatch = useAppDispatch();
   const folders: Folder[] = useAppSelector((state) => state.folders);
   const chatsShortcut: ChatsShortcut[] = useAppSelector(
@@ -25,10 +28,15 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [showChatAlert, setShowChatAlert] = useState(false);
   const [showChatFolder, setShowChatFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
-  const handleChatSubmit = (chatName: string) => {
+  const { mutate } = useChatBarChatPost();
+  const handleChatSubmit = (text: string) => {
+    mutate({
+      chat_name: text,
+      email,
+    });
     setShowChatAlert(false);
   };
-  const handleFolderSubmit = (folderName: string) => {
+  const handleFolderSubmit = () => {
     dispatch(addFolder(folderName));
     setShowFolderAlert(false);
   };
@@ -46,7 +54,13 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   return (
     <>
       {showFolderAlert && <AddAlert isChat={false} cancelBtn={handleCancel} />}
-      {showChatAlert && <AddAlert isChat={true} cancelBtn={handleCancel} />}
+      {showChatAlert && (
+        <AddAlert
+          isChat={true}
+          cancelBtn={handleCancel}
+          addBtn={(value) => handleChatSubmit(value.toString())}
+        />
+      )}
       {showChatFolder && showChatAlert && (
         <AddAlert isChat={true} cancelBtn={handleCancel} />
       )}

@@ -14,6 +14,8 @@ const Avatar = () => {
       const userdetails = await getUser();
       userdetails && setUser(userdetails);
       user && setAvatar(await user.user_metadata.avatar_url);
+      user?.user_metadata.email &&
+        localStorage.setItem("email", user.user_metadata.email);
       !userdetails && navigate({ to: "/" });
     };
     LoadUserDetails();

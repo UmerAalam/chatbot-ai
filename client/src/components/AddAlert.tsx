@@ -1,11 +1,11 @@
 import React, { KeyboardEvent, useState } from "react";
-import { ChatsShortcut } from "src/app/slices/chatShortcutSlice";
 
 interface Props {
-  addBtn?: () => void;
+  addBtn?: (text: String) => void;
   cancelBtn?: () => void;
   isChat: boolean;
 }
+
 const AddAlert = ({ addBtn, cancelBtn, isChat = false }: Props) => {
   const [text, setText] = useState("");
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,7 +20,7 @@ const AddAlert = ({ addBtn, cancelBtn, isChat = false }: Props) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (text.trim() === "") return;
-      addBtn && addBtn();
+      addBtn && addBtn(text);
       setText("");
     }
   };
@@ -50,7 +50,7 @@ const AddAlert = ({ addBtn, cancelBtn, isChat = false }: Props) => {
           <button
             onClick={() => {
               if (text.trim() === "") return;
-              addBtn && addBtn();
+              addBtn && addBtn(text);
               setText("");
             }}
             className="w-24 h-10 font-bold bg-green-400 text-green-900 hover:text-white border-2 border-transparent hover:border-white rounded-2xl"

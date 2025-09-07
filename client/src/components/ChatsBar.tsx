@@ -5,14 +5,13 @@ import { HTMLAttributes, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowLeft } from "react-icons/fa";
 import AddAlert from "./AddAlert";
-import { addFolder, Folder } from "src/app/slices/foldersSlice";
-import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import ChatShortcut from "./ChatShortcut";
 import FolderChats from "./FolderChats";
 import {
   useChatBarChatCreate,
   useUserChatBarChats,
 } from "src/query/chatbarchat";
+import { useFolderCreate, useFolders } from "src/query/folder";
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
 }
@@ -21,8 +20,8 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const email = localStorage.getItem("email") || "";
   const { data: chatbarchats, isLoading } = useUserChatBarChats(email);
   const { mutate: createChat } = useChatBarChatCreate();
-  const dispatch = useAppDispatch();
-  const folders: Folder[] = useAppSelector((state) => state.folders);
+  const { mutate: createFolder } = useFolderCreate();
+  const { data: folders, isLoading: folderLoading } = useFolders(email);
   const [showFolderAlert, setShowFolderAlert] = useState(false);
   const [showChatAlert, setShowChatAlert] = useState(false);
   const [showChatFolder, setShowChatFolder] = useState(false);
@@ -34,8 +33,11 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
     });
     setShowChatAlert(false);
   };
-  const handleFolderSubmit = () => {
-    dispatch(addFolder(folderName));
+  const handleFolderSubmit = (name: string) => {
+    createFolder({
+      email,
+      folder_name: name,
+    });
     setShowFolderAlert(false);
   };
   const handleCancel = () => {
@@ -45,11 +47,10 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
-  const handleShowChatFolder = (folder: Folder) => {
+  const handleShowChatFolder = () => {
     setShowChatFolder(!showFolderAlert);
-    setFolderName(folder.name);
   };
-  if (isLoading) {
+  if (isLoading && folderLoading) {
     return <div>Loading</div>;
   }
   return (
@@ -63,7 +64,11 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
         />
       )}
       {showChatFolder && showChatAlert && (
-        <AddAlert isChat={true} cancelBtn={handleCancel} />
+        <AddAlert
+          isChat={true}
+          cancelBtn={handleCancel}
+          addBtn={(name) => handleFolderSubmit(name.toString())}
+        />
       )}
       <div
         {...rest}
@@ -125,31 +130,37 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
             <>
               <div className="w-full">
                 {!searchTerm.trim() &&
-                  folders.map((folder, index) => {
+                  folders?.map((folder, index) => {
                     return (
                       <div
-                        onClick={() => handleShowChatFolder(folder)}
+                        onClick={() => handleShowChatFolder()}
                         key={index}
                         className="w-full py-1.5 h-auto"
                       >
-                        <ChatFolder id={folder.id} currentName={folder.name} />
+                        <ChatFolder
+                          id={folder.id}
+                          currentName={folder.folder_name}
+                        />
                       </div>
                     );
                   })}
                 {searchTerm.trim() &&
                   folders
-                    .filter((folder) =>
-                      folder.name
+                    ?.filter((folder) =>
+                      folder.folder_name
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()),
                     )
                     .map((folder, index) => (
                       <div
-                        onClick={() => handleShowChatFolder(folder)}
+                        onClick={() => handleShowChatFolder()}
                         className="w-full py-1.5 h-auto"
                         key={index}
                       >
-                        <ChatFolder id={folder.id} currentName={folder.name} />
+                        <ChatFolder
+                          id={folder.id}
+                          currentName={folder.folder_name}
+                        />
                       </div>
                     ))}
               </div>

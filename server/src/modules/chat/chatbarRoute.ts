@@ -1,13 +1,13 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
+import { supabase } from "../../server";
+import "dotenv/config";
 import {
   chatBarChatSchema,
   deleteUserChatSchema,
   renameChatBarChatSchema,
   userChatBarChatsSchema,
 } from "./chatbar.dto";
-import { supabase } from "../../server";
-import "dotenv/config";
 
 export const chatbarRoute = new Hono()
   .basePath("chatbarchat")

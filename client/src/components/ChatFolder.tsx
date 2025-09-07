@@ -1,20 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { HiDotsHorizontal } from "react-icons/hi";
-import { useAppDispatch } from "src/app/hooks/hook";
-import { deleteFolder, renameFolder } from "src/app/slices/foldersSlice";
 import { FaCheck } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
+import { useFolderDelete, useFolderRename } from "src/query/folder";
 
 interface Props {
-  id: string;
+  id?: number;
   currentName: string;
 }
 
 function ChatFolder({ id, currentName }: Props) {
+  const email = localStorage.getItem("email") || "";
   const [showDropdown, setShowDropDown] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
+  const { mutate: deleteFolder } = useFolderDelete();
+  const { mutate: renameFolder } = useFolderRename();
   const [name, setName] = useState(currentName);
-  const dispatch = useAppDispatch();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,11 +35,12 @@ function ChatFolder({ id, currentName }: Props) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDropdown]);
-  const handleFolderDelete = (folderID: string) => {
+  const handleFolderDelete = () => {
+    id && deleteFolder(id);
     setShowDropDown(false);
-    dispatch(deleteFolder(folderID));
   };
   const handleRenaming = () => {
+    id && renameFolder({ id, folder_name: name });
     setShowDropDown(false);
     setIsRenaming(true);
   };
@@ -58,7 +60,7 @@ function ChatFolder({ id, currentName }: Props) {
             </li>
             <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Move</li>
             <li
-              onClick={() => handleFolderDelete(id)}
+              onClick={() => handleFolderDelete()}
               className="flex justify-start items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-b-lg text-red-400 hover:text-red-300"
             >
               Delete
@@ -76,7 +78,6 @@ function ChatFolder({ id, currentName }: Props) {
         {isRenaming ? (
           <FaCheck
             onClick={() => {
-              dispatch(renameFolder({ id, currentName, newName: name }));
               setIsRenaming(false);
             }}
             className="text-white/80 rounded-full hover:bg-gray-700/70 p-1 cursor-pointer"

@@ -6,6 +6,7 @@ import "dotenv/config";
 import { openaiRoute } from "./modules/openAI/openaiRoute";
 import { chatbarRoute } from "./modules/chat/chatbarRoute";
 import { createClient } from "@supabase/supabase-js";
+import { folderRoute } from "./modules/folder/folder.route";
 
 const supabaseUrl = process.env.SUPABASE_URL || "";
 const supabaseKey = process.env.SUPABASE_API_KEY || "";
@@ -23,7 +24,8 @@ const app = new Hono()
     }),
   )
   .route("/api", openaiRoute)
-  .route("/api", chatbarRoute);
+  .route("/api", chatbarRoute)
+  .route("/api", folderRoute);
 
 export type AppType = typeof app;
 

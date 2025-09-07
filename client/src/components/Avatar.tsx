@@ -13,7 +13,8 @@ const Avatar = () => {
     const LoadUserDetails = async () => {
       const userdetails = await getUser();
       userdetails && setUser(userdetails);
-      user && setAvatar(await user.user_metadata.avatar_url);
+      const avatar_url = await userdetails?.user_metadata.avatar_url;
+      userdetails && setAvatar(avatar_url);
       user?.user_metadata.email &&
         localStorage.setItem("email", user.user_metadata.email);
       !userdetails && navigate({ to: "/" });

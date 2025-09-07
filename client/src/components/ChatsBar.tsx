@@ -9,7 +9,10 @@ import { addFolder, Folder } from "src/app/slices/foldersSlice";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import ChatShortcut from "./ChatShortcut";
 import FolderChats from "./FolderChats";
-import { useChatBarChatPost, useUserChatBarChats } from "src/query/chatbarchat";
+import {
+  // useChatBarChatCreate,
+  useUserChatBarChats,
+} from "src/query/chatbarchat";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
@@ -18,18 +21,18 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const email = localStorage.getItem("email") || "";
   const { data: chatbarchats, isLoading } = useUserChatBarChats(email);
+  // const { mutate: createChat } = useChatBarChatCreate();
   const dispatch = useAppDispatch();
   const folders: Folder[] = useAppSelector((state) => state.folders);
   const [showFolderAlert, setShowFolderAlert] = useState(false);
   const [showChatAlert, setShowChatAlert] = useState(false);
   const [showChatFolder, setShowChatFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
-  const { mutate } = useChatBarChatPost();
   const handleChatSubmit = (text: string) => {
-    mutate({
-      chat_name: text,
-      email,
-    });
+    // createChat({
+    //   chat_name: text,
+    //   email,
+    // });
     setShowChatAlert(false);
   };
   const handleFolderSubmit = () => {
@@ -164,7 +167,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                   chatbarchats?.map((chat) => {
                     return (
                       <div className="w-full py-1.5 h-auto">
-                        <ChatShortcut name={chat.chat_name} />
+                        <ChatShortcut id={chat.id} name={chat.chat_name} />
                       </div>
                     );
                   })}
@@ -180,7 +183,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                         className="w-full py-1.5 h-auto"
                         key={chat.chat_name}
                       >
-                        <ChatShortcut name={chat.chat_name} />
+                        <ChatShortcut id={chat.id} name={chat.chat_name} />
                       </div>
                     ))}
               </div>

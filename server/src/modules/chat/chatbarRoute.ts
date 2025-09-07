@@ -5,21 +5,23 @@ import {
   renameChatBarChatSchema,
   userChatBarChatsSchema,
 } from "./chatbar.dto";
-import { supabase } from "../../server";
+import "dotenv/config";
 
+import { supabase } from "../../server";
 export const chatbarRoute = new Hono()
   .basePath("chatbarchat")
-  .post("/create", zValidator("json", chatBarChatSchema), async (c) => {
+  .post("/", zValidator("json", chatBarChatSchema), async (c) => {
     const chatbarchat = await c.req.json();
     const res = await supabase.from("chatbarchats").insert(chatbarchat);
     return c.json(res, 200);
   })
-  .post("/rename", zValidator("json", renameChatBarChatSchema), async (c) => {
-    const renameChatBarChat = await c.req.json();
+  .patch("/", zValidator("json", renameChatBarChatSchema), async (c) => {
+    const { id, chat_name } = c.req.valid("json");
     const res = await supabase
       .from("chatbarchats")
-      .update(renameChatBarChat)
-      .eq("id", renameChatBarChat.id);
+      .update({ chat_name })
+      .eq("id", Number(id))
+      .select();
     return c.json(res, 200);
   })
   .get("/", zValidator("query", userChatBarChatsSchema), async (c) => {

@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
-import { useAppDispatch } from "src/app/hooks/hook";
 import { MdDelete } from "react-icons/md";
-import { deleteChat, renameChat } from "src/app/slices/chatShortcutSlice";
-function ChatShortcut(props: { name: string }) {
+import { useChatBarChatRename } from "src/query/chatbarchat";
+function ChatShortcut(props: { id?: number; name: string }) {
   const [showDropdown, setShowDropDown] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [name, setName] = useState(props.name);
-  const dispatch = useAppDispatch();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const { mutate: renameChat } = useChatBarChatRename();
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -30,7 +29,6 @@ function ChatShortcut(props: { name: string }) {
   }, [showDropdown]);
   const handleChatDelete = (chatName: string) => {
     setShowDropDown(false);
-    dispatch(deleteChat(chatName));
   };
   const handleRenaming = () => {
     setShowDropDown(false);
@@ -70,7 +68,11 @@ function ChatShortcut(props: { name: string }) {
         {isRenaming ? (
           <FaCheck
             onClick={() => {
-              dispatch(renameChat({ oldName: props.name, newName: name }));
+              props.id &&
+                renameChat({
+                  id: props.id,
+                  chat_name: name,
+                });
               setIsRenaming(false);
             }}
             className="text-white/80 rounded-full hover:bg-gray-700/70 p-1 cursor-pointer"

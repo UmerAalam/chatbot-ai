@@ -19,7 +19,7 @@ const Avatar = () => {
       !userdetails && navigate({ to: "/" });
     };
     LoadUserDetails();
-  });
+  }, []);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

@@ -32,7 +32,6 @@ const getPromptResult = (prompt: string) => {
     enabled,
   });
 };
-
 export const usePromptResult = (prompt: string) => {
   return useQuery(getPromptResult(prompt));
 };

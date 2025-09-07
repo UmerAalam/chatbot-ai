@@ -7,11 +7,9 @@ import { FaArrowLeft } from "react-icons/fa";
 import AddAlert from "./AddAlert";
 import { addFolder, Folder } from "src/app/slices/foldersSlice";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
-import { type ChatsShortcut } from "src/app/slices/chatShortcutSlice";
 import ChatShortcut from "./ChatShortcut";
 import FolderChats from "./FolderChats";
-import { useChatBarChatPost } from "src/query/chatbarchat";
-import { getUser } from "src/supabase-client/supabase-client";
+import { useChatBarChatPost, useUserChatBarChats } from "src/query/chatbarchat";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
@@ -19,11 +17,9 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 function ChatsBar({ handleBtn, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const email = localStorage.getItem("email") || "";
+  const { data: chatbarchats, isLoading } = useUserChatBarChats(email);
   const dispatch = useAppDispatch();
   const folders: Folder[] = useAppSelector((state) => state.folders);
-  const chatsShortcut: ChatsShortcut[] = useAppSelector(
-    (state) => state.chatsShortcut,
-  );
   const [showFolderAlert, setShowFolderAlert] = useState(false);
   const [showChatAlert, setShowChatAlert] = useState(false);
   const [showChatFolder, setShowChatFolder] = useState(false);
@@ -51,6 +47,9 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
     setShowChatFolder(!showFolderAlert);
     setFolderName(folder.name);
   };
+  if (isLoading) {
+    return <div>Loading</div>;
+  }
   return (
     <>
       {showFolderAlert && <AddAlert isChat={false} cancelBtn={handleCancel} />}
@@ -162,15 +161,17 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
               </div>
               <div className="w-full">
                 {!searchTerm.trim() &&
-                  chatsShortcut.map((chat) => {
+                  chatbarchats?.data !== null &&
+                  chatbarchats?.data.map((chat) => {
                     return (
                       <div className="w-full py-1.5 h-auto">
-                        <ChatShortcut name={chat.name} />
+                        <ChatShortcut name={chat.chat_name} />
                       </div>
                     );
                   })}
                 {searchTerm.trim() &&
-                  chatsShortcut
+                  chatbarchats?.data !== null &&
+                  chatbarchats?.data
                     .filter((chat) =>
                       chat.name
                         .toLowerCase()

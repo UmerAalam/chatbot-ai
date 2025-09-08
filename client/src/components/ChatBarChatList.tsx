@@ -1,16 +1,17 @@
 import { useUserChatBarChats } from "src/query/chatbarchat";
 import ChatShortcut from "./ChatShortcut";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface Props {
   searchTerm: string;
 }
 const ChatBarChatList = ({ searchTerm }: Props) => {
-  const email = localStorage.getItem("email") || "";
+  const [email, setEmail] = useState("");
+  useEffect(() => {
+    const Email = localStorage.getItem("email") || "";
+    setEmail(Email);
+  }, []);
   const { data: chatbarchats, isLoading } = useUserChatBarChats(email);
-  if (chatbarchats && isLoading) {
-    return <div>Loading</div>;
-  }
   const items = useMemo(() => {
     if (!chatbarchats) return [];
     const list = searchTerm.trim()
@@ -24,6 +25,9 @@ const ChatBarChatList = ({ searchTerm }: Props) => {
       return dateB - dateA;
     });
   }, [searchTerm, chatbarchats]);
+  if (isLoading) {
+    return <div>Loading</div>;
+  }
   return (
     <div className="w-full">
       {items.map((chat) => (

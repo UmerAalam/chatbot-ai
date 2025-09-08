@@ -58,7 +58,7 @@ function ChatFolder({ id, onRowClick, currentName, ...rest }: Props) {
         <div
           ref={menuRef}
           onMouseDown={(e) => e.stopPropagation()}
-          className="absolute right-0 top-12 z-50 bg-gray-800/80 backdrop-blur-2xl text-white/90 rounded-lg shadow-lg border border-gray-700/50 w-40"
+          className="cursor-pointer absolute right-0 top-12 z-50 bg-gray-800/80 backdrop-blur-2xl text-white/90 rounded-lg shadow-lg border border-gray-700/50 w-40"
           onPointerDown={(e) => e.stopPropagation()}
         >
           <ul className="flex flex-col text-sm">
@@ -79,7 +79,7 @@ function ChatFolder({ id, onRowClick, currentName, ...rest }: Props) {
           </ul>
         </div>
       )}
-      <div className="select-none w-full h-full flex items-center justify-between">
+      <div className="select-none cursor-pointer w-full h-full flex items-center justify-between">
         {isRenaming ? (
           <>
             <input
@@ -100,7 +100,7 @@ function ChatFolder({ id, onRowClick, currentName, ...rest }: Props) {
             <button
               type="button"
               onClick={() => onRowClick(name)}
-              className="flex-1 text-left truncate hover:opacity-90"
+              className="flex-1 text-left truncate cursor-pointer hover:opacity-90"
             >
               {currentName}
             </button>
@@ -114,7 +114,7 @@ function ChatFolder({ id, onRowClick, currentName, ...rest }: Props) {
                 e.stopPropagation();
                 setOpen((v) => !v);
               }}
-              className="rounded-full hover:bg-gray-700/70 p-1"
+              className="rounded-full hover:bg-gray-700/70 p-1 cursor-pointer"
             >
               <HiDotsHorizontal className="text-white/80" size={16} />
             </button>

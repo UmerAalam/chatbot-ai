@@ -1,6 +1,6 @@
 import { useFolders } from "src/query/folder";
 import ChatFolder from "./ChatFolder";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface FolderProps {
   name: string;
@@ -11,11 +11,12 @@ interface Props {
   showChatFolder: ({ name, folder_id }: FolderProps) => void;
 }
 const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
-  const email = localStorage.getItem("email") || "";
+  const [email, setEmail] = useState("");
+  useEffect(() => {
+    const Email = localStorage.getItem("email") || "";
+    setEmail(Email);
+  }, []);
   const { data: folders, isLoading: folderLoading } = useFolders(email);
-  if (folderLoading) {
-    return <div>Loading...</div>;
-  }
   const items = useMemo(() => {
     if (!folders) return [];
     const list = searchTerm.trim()
@@ -28,8 +29,10 @@ const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateB - dateA;
     });
-  }, [folders, searchTerm]);
-
+  }, [searchTerm, folders]);
+  if (folderLoading) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="w-full">
       {items.map((folder) => (

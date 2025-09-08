@@ -13,6 +13,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
 }
 function ChatsBar({ handleBtn, ...rest }: Props) {
+  const email = localStorage.getItem("email") || "";
   const [searchTerm, setSearchTerm] = useState("");
   const { mutate: createChat } = useChatBarChatCreate();
   const { mutate: createFolder } = useFolderCreate();
@@ -21,8 +22,6 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [showChatFolder, setShowChatFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [folderId, setFolderId] = useState("");
-  const [email, setEmail] = useState("");
-  useEffect(() => setEmail(localStorage.getItem("email") || ""), []);
   const handleChatSubmit = (text: string) => {
     createChat({
       chat_name: text,

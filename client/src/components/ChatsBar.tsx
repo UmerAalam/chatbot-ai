@@ -30,17 +30,18 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const handleChatSubmit = (text: string) => {
     createChat({
       chat_name: text,
-      folderId: "DEFAULT",
+      folder_id: "DEFAULT",
       email,
     });
     setShowChatAlert(false);
   };
   const handleChatSubmitByFolderID = (props: { text: string }) => {
-    createChat({
-      chat_name: props.text,
-      folderId: folderId,
-      email,
-    });
+    if (folderId)
+      createChat({
+        chat_name: props.text,
+        folder_id: folderId,
+        email,
+      });
     setShowChatAlert(false);
   };
   const handleFolderSubmit = (name: string) => {
@@ -166,7 +167,10 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                       return (
                         <div key={index} className="w-full py-1.5 h-auto">
                           <ChatFolder
-                            onRowClick={(name) => handleShowChatFolder(name)}
+                            onRowClick={(name) => {
+                              folder.id && setFolderId(folder.id.toString());
+                              handleShowChatFolder(name);
+                            }}
                             id={folder.id}
                             currentName={folder.folder_name}
                           />

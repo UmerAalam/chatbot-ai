@@ -12,6 +12,10 @@ export const userChatBarChatsSchema = z.object({
   email: z.string().max(100).nonempty(),
 });
 
+export const userChatsByFolderIDSchema = z.object({
+  folder_id: z.number().nonnegative(),
+});
+
 export const renameChatBarChatSchema = z.object({
   id: z.number().nonnegative(),
   chat_name: z.string().max(100).nonempty(),

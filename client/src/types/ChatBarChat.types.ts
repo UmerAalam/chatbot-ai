@@ -1,6 +1,6 @@
 export interface ChatBarChat {
   id?: number;
-  folderId?: string;
+  folder_id?: string;
   chat_name: string;
   email: string;
   created_at?: string;

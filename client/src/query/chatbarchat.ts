@@ -66,6 +66,22 @@ export const useChatBarChatRename = () => {
   });
   return mutation;
 };
+const userChatsByFolderID = (folder_id: string) => {
+  return queryOptions({
+    queryFn: async () => {
+      const res = await client.api.chatbarchat.folderID.$get({
+        query: { folder_id },
+      });
+      if (!res.ok) {
+        throw new Error("Error Getting ChatBarChats");
+      }
+      const data = await res.json();
+      return data.data as ChatBarChat[];
+    },
+    queryKey: ["chatbarchats"],
+    enabled: !!folder_id,
+  });
+};
 const userChatBarChats = (email: string) => {
   return queryOptions({
     queryFn: async () => {
@@ -81,6 +97,9 @@ const userChatBarChats = (email: string) => {
     queryKey: ["chatbarchats"],
     enabled: !!email,
   });
+};
+export const useChatsByFolderID = (folder_id: string) => {
+  return useQuery(userChatsByFolderID(folder_id));
 };
 export const useUserChatBarChats = (email: string) => {
   return useQuery(userChatBarChats(email));

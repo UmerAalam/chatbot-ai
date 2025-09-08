@@ -7,6 +7,7 @@ import {
   deleteUserChatSchema,
   renameChatBarChatSchema,
   userChatBarChatsSchema,
+  userChatsByFolderIDSchema,
 } from "./chatbar.dto";
 
 export const chatbarRoute = new Hono()
@@ -35,6 +36,22 @@ export const chatbarRoute = new Hono()
   })
   .get("/", zValidator("query", userChatBarChatsSchema), async (c) => {
     const email = c.req.query("email");
-    const res = await supabase.from("chatbarchats").select().eq("email", email);
+    const res = await supabase
+      .from("chatbarchats")
+      .select()
+      .eq("email", email)
+      .eq("folder_id", "DEFAULT");
     return c.json(res, 200);
-  });
+  })
+  .get(
+    "/folderID",
+    zValidator("query", userChatsByFolderIDSchema),
+    async (c) => {
+      const folder_id = c.req.query("folder_id");
+      const res = await supabase
+        .from("chatbarchats")
+        .select()
+        .eq("folder_id", folder_id);
+      return c.json(res, 200);
+    },
+  );

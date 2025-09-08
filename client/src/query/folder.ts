@@ -10,6 +10,7 @@ interface Folder {
   id?: number;
   email: string;
   folder_name: string;
+  created_at?: string;
 }
 interface RenameFolder {
   id: number;

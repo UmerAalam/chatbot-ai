@@ -139,17 +139,28 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
             <>
               <div className="w-full">
                 {!searchTerm.trim() &&
-                  folders?.map((folder, index) => {
-                    return (
-                      <div key={index} className="w-full py-1.5 h-auto">
-                        <ChatFolder
-                          onRowClick={(name) => handleShowChatFolder(name)}
-                          id={folder.id}
-                          currentName={folder.folder_name}
-                        />
-                      </div>
-                    );
-                  })}
+                  folders
+                    ?.sort((a, b) => {
+                      const dateA = a.created_at
+                        ? new Date(a.created_at).getTime()
+                        : 0;
+                      const dateB = b.created_at
+                        ? new Date(b.created_at).getTime()
+                        : 0;
+                      return dateA - dateB;
+                    })
+                    .reverse()
+                    .map((folder, index) => {
+                      return (
+                        <div key={index} className="w-full py-1.5 h-auto">
+                          <ChatFolder
+                            onRowClick={(name) => handleShowChatFolder(name)}
+                            id={folder.id}
+                            currentName={folder.folder_name}
+                          />
+                        </div>
+                      );
+                    })}
                 {searchTerm.trim() &&
                   folders
                     ?.filter((f) =>
@@ -157,6 +168,16 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()),
                     )
+                    .reverse()
+                    .sort((a, b) => {
+                      const dateA = a.created_at
+                        ? new Date(a.created_at).getTime()
+                        : 0;
+                      const dateB = b.created_at
+                        ? new Date(b.created_at).getTime()
+                        : 0;
+                      return dateA - dateB;
+                    })
                     .map((folder) => (
                       <div className="w-full py-1.5 h-auto" key={folder.id}>
                         <ChatFolder
@@ -177,13 +198,24 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
               </div>
               <div className="w-full">
                 {!searchTerm.trim() &&
-                  chatbarchats?.map((chat) => {
-                    return (
-                      <div className="w-full py-1.5 h-auto">
-                        <ChatShortcut id={chat.id} name={chat.chat_name} />
-                      </div>
-                    );
-                  })}
+                  chatbarchats
+                    ?.sort((a, b) => {
+                      const dateA = a.created_at
+                        ? new Date(a.created_at).getTime()
+                        : 0;
+                      const dateB = b.created_at
+                        ? new Date(b.created_at).getTime()
+                        : 0;
+                      return dateA - dateB;
+                    })
+                    .reverse()
+                    .map((chat) => {
+                      return (
+                        <div className="w-full py-1.5 h-auto">
+                          <ChatShortcut id={chat.id} name={chat.chat_name} />
+                        </div>
+                      );
+                    })}
                 {searchTerm.trim() &&
                   chatbarchats
                     ?.filter((chat) =>
@@ -191,6 +223,16 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()),
                     )
+                    .sort((a, b) => {
+                      const dateA = a.created_at
+                        ? new Date(a.created_at).getTime()
+                        : 0;
+                      const dateB = b.created_at
+                        ? new Date(b.created_at).getTime()
+                        : 0;
+                      return dateA - dateB;
+                    })
+                    .reverse()
                     .map((chat) => (
                       <div
                         className="w-full py-1.5 h-auto"

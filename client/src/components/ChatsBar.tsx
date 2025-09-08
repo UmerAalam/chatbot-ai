@@ -26,9 +26,19 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [showChatAlert, setShowChatAlert] = useState(false);
   const [showChatFolder, setShowChatFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
+  const [folderId, setFolderId] = useState("");
   const handleChatSubmit = (text: string) => {
     createChat({
       chat_name: text,
+      folderId: "DEFAULT",
+      email,
+    });
+    setShowChatAlert(false);
+  };
+  const handleChatSubmitByFolderID = (props: { text: string }) => {
+    createChat({
+      chat_name: props.text,
+      folderId: folderId,
       email,
     });
     setShowChatAlert(false);
@@ -51,7 +61,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
     setFolderName(name);
     setShowChatFolder(!showFolderAlert);
   };
-  if (isLoading && folderLoading) {
+  if (isLoading && folderLoading && chatbarchats && folders) {
     return <div>Loading</div>;
   }
   return (
@@ -74,7 +84,9 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
         <AddAlert
           isChat={true}
           cancelBtn={handleCancel}
-          addBtn={(name) => handleFolderSubmit(name.toString())}
+          addBtn={(name) =>
+            handleChatSubmitByFolderID({ text: name.toString() })
+          }
         />
       )}
       <div
@@ -106,7 +118,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
           <div className="text-white w-full px-2.5 flex justify-between items-center mt-3 font-semibold">
             {showChatFolder ? (
               <div className="flex w-full justify-between items-center">
-                <div className="flex gap-1 items-center p-1 pl-0.5 w-18 justify-center rounded-full backdrop-blur-2xl">
+                <div className="flex gap-1 items-center p-3 h-8 w-auto justify-center rounded-full backdrop-blur-2xl">
                   {folderName}
                 </div>
                 <div className="flex gap-1 items-center p-1 rounded-full backdrop-blur-2xl">
@@ -183,7 +195,10 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                         <ChatFolder
                           id={folder.id}
                           currentName={folder.folder_name}
-                          onRowClick={handleShowChatFolder}
+                          onRowClick={(name) => {
+                            folder.id && setFolderId(folder.id.toString());
+                            handleShowChatFolder(name);
+                          }}
                         />
                       </div>
                     ))}
@@ -209,9 +224,9 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                       return dateA - dateB;
                     })
                     .reverse()
-                    .map((chat) => {
+                    .map((chat, index) => {
                       return (
-                        <div className="w-full py-1.5 h-auto">
+                        <div key={index} className="w-full py-1.5 h-auto">
                           <ChatShortcut id={chat.id} name={chat.chat_name} />
                         </div>
                       );
@@ -234,10 +249,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                     })
                     .reverse()
                     .map((chat) => (
-                      <div
-                        className="w-full py-1.5 h-auto"
-                        key={chat.chat_name}
-                      >
+                      <div className="w-full py-1.5 h-auto" key={chat.id}>
                         <ChatShortcut id={chat.id} name={chat.chat_name} />
                       </div>
                     ))}

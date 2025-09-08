@@ -6,18 +6,19 @@ import { getUser, supabase } from "src/supabase-client/supabase-client";
 const Avatar = () => {
   const [user, setUser] = useState<User>();
   const [avatar, setAvatar] = useState("");
+  const [showCustomAvatar, setShowCustomAvatar] = useState(false);
   const [showDropdown, setShowDropDown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   useEffect(() => {
     const LoadUserDetails = async () => {
       const userdetails = await getUser();
+      !userdetails && navigate({ to: "/" });
       userdetails && setUser(userdetails);
       const avatar_url = await userdetails?.user_metadata.avatar_url;
-      userdetails && setAvatar(avatar_url);
-      user?.user_metadata.email &&
-        localStorage.setItem("email", user.user_metadata.email);
-      !userdetails && navigate({ to: "/" });
+      setAvatar(avatar_url);
+      userdetails?.user_metadata.email &&
+        localStorage.setItem("email", userdetails.user_metadata.email);
     };
     LoadUserDetails();
   }, []);
@@ -46,7 +47,7 @@ const Avatar = () => {
   return (
     <div
       onClick={() => setShowDropDown(!showDropdown)}
-      className="absolute top-5 right-5 bg-white z-10 rounded-full border-2 border-green-400 w-10 h-10"
+      className="absolute cursor-pointer top-5 right-5 bg-white z-10 rounded-full border-2 border-green-400 w-10 h-10"
     >
       {showDropdown && (
         <div
@@ -63,7 +64,18 @@ const Avatar = () => {
           </ul>
         </div>
       )}
-      {avatar && <img src={avatar} className="rounded-full" />}
+      {showCustomAvatar ? (
+        <div className="flex justify-center select-none items-center font-bold text-white text-xl w-full h-full bg-green-700 rounded-full">
+          {user && user?.user_metadata.full_name.slice(0, 1)}
+        </div>
+      ) : (
+        <img
+          src={avatar}
+          alt="Avatar"
+          onError={() => setShowCustomAvatar(true)}
+          className="rounded-full"
+        />
+      )}
     </div>
   );
 };

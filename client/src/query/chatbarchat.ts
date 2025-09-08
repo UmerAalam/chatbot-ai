@@ -24,6 +24,7 @@ export const useChatBarChatCreate = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
+      queryClient.invalidateQueries();
     },
   });
 
@@ -43,6 +44,7 @@ export const useChatBarChatDelete = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
+      queryClient.invalidateQueries();
     },
   });
   return mutation;
@@ -62,6 +64,7 @@ export const useChatBarChatRename = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
+      queryClient.invalidateQueries();
     },
   });
   return mutation;
@@ -78,7 +81,7 @@ const userChatsByFolderID = (folder_id: string) => {
       const data = await res.json();
       return data.data as ChatBarChat[];
     },
-    queryKey: ["chatbarchats"],
+    queryKey: ["chatbarchats", folder_id],
     enabled: !!folder_id,
   });
 };

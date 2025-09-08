@@ -51,7 +51,7 @@ export const chatbarRoute = new Hono()
       const res = await supabase
         .from("chatbarchats")
         .select()
-        .eq("folder_id", folder_id);
+        .eq("folder_id", folder_id?.toString());
       return c.json(res, 200);
     },
   );

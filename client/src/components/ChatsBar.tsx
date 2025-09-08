@@ -18,7 +18,6 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 function ChatsBar({ handleBtn, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const email = localStorage.getItem("email") || "";
-  const { data: chatbarchats, isLoading } = useUserChatBarChats(email);
   const { mutate: createChat } = useChatBarChatCreate();
   const { mutate: createFolder } = useFolderCreate();
   const { data: folders, isLoading: folderLoading } = useFolders(email);
@@ -62,7 +61,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
     setFolderName(name);
     setShowChatFolder(!showFolderAlert);
   };
-  if (isLoading && folderLoading && chatbarchats && folders) {
+  if (folderLoading && folders) {
     return <div>Loading</div>;
   }
   return (
@@ -147,7 +146,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
             )}
           </div>
           {showChatFolder ? (
-            <FolderChats />
+            <FolderChats folder_id={folderId} />
           ) : (
             <>
               <div className="w-full">
@@ -184,7 +183,6 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()),
                     )
-                    .reverse()
                     .sort((a, b) => {
                       const dateA = a.created_at
                         ? new Date(a.created_at).getTime()
@@ -194,6 +192,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                         : 0;
                       return dateA - dateB;
                     })
+                    .reverse()
                     .map((folder) => (
                       <div className="w-full py-1.5 h-auto" key={folder.id}>
                         <ChatFolder

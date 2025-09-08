@@ -13,7 +13,7 @@ export const userChatBarChatsSchema = z.object({
 });
 
 export const userChatsByFolderIDSchema = z.object({
-  folder_id: z.number().nonnegative(),
+  folder_id: z.string(),
 });
 
 export const renameChatBarChatSchema = z.object({

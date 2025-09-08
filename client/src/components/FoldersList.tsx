@@ -5,7 +5,6 @@ interface FolderProps {
   name: string;
   folder_id: string;
 }
-
 interface Props {
   searchTerm: string;
   showChatFolder: ({ name, folder_id }: FolderProps) => void;

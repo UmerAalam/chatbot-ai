@@ -24,10 +24,8 @@ export const useChatBarChatCreate = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
-      queryClient.invalidateQueries();
     },
   });
-
   return mutation;
 };
 export const useChatBarChatDelete = () => {
@@ -44,7 +42,6 @@ export const useChatBarChatDelete = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
-      queryClient.invalidateQueries();
     },
   });
   return mutation;
@@ -64,7 +61,6 @@ export const useChatBarChatRename = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
-      queryClient.invalidateQueries();
     },
   });
   return mutation;
@@ -81,10 +77,14 @@ const userChatsByFolderID = (folder_id: string) => {
       const data = await res.json();
       return data.data as ChatBarChat[];
     },
-    queryKey: ["chatbarchats", folder_id],
+    queryKey: ["chatbarchats"],
     enabled: !!folder_id,
   });
 };
+export const useChatsByFolderID = (folder_id: string) => {
+  return useQuery(userChatsByFolderID(folder_id));
+};
+//userChatBarChats
 const userChatBarChats = (email: string) => {
   return queryOptions({
     queryFn: async () => {
@@ -100,9 +100,6 @@ const userChatBarChats = (email: string) => {
     queryKey: ["chatbarchats"],
     enabled: !!email,
   });
-};
-export const useChatsByFolderID = (folder_id: string) => {
-  return useQuery(userChatsByFolderID(folder_id));
 };
 export const useUserChatBarChats = (email: string) => {
   return useQuery(userChatBarChats(email));

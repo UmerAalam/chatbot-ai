@@ -23,6 +23,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [folderName, setFolderName] = useState("");
   const [folderId, setFolderId] = useState("");
   const handleChatSubmit = (text: string) => {
+    console.log(text);
     createChat({
       chat_name: text,
       folder_id: "DEFAULT",

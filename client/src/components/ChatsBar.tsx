@@ -1,5 +1,4 @@
 import ChatBarSearch from "./ChatBarSearch";
-import ChatFolder from "./ChatFolder";
 import { IoMdAdd } from "react-icons/io";
 import { HTMLAttributes, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import AddAlert from "./AddAlert";
 import FolderChats from "./FolderChats";
 import { useChatBarChatCreate } from "src/query/chatbarchat";
-import { useFolderCreate, useFolders } from "src/query/folder";
+import { useFolderCreate } from "src/query/folder";
 import ChatBarChatList from "./ChatBarChatList";
 import FoldersList from "./FoldersList";
 interface Props extends HTMLAttributes<HTMLDivElement> {
@@ -145,7 +144,10 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
             <>
               <FoldersList
                 searchTerm={searchTerm}
-                showChatFolder={handleShowChatFolder}
+                showChatFolder={({ folder_id, name }) => {
+                  handleShowChatFolder(name);
+                  setFolderId(folder_id);
+                }}
               />
               <div className="text-white w-full px-2.5 flex justify-between items-center mt-3 font-semibold">
                 Chats

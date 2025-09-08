@@ -1,15 +1,18 @@
 import { useFolders } from "src/query/folder";
 import ChatFolder from "./ChatFolder";
-import { useState } from "react";
+
+interface FolderProps {
+  name: string;
+  folder_id: string;
+}
 
 interface Props {
   searchTerm: string;
-  showChatFolder: (name: string) => void;
+  showChatFolder: ({ name, folder_id }: FolderProps) => void;
 }
 const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
   const email = localStorage.getItem("email") || "";
   const { data: folders, isLoading: folderLoading } = useFolders(email);
-  const [folderId, setFolderId] = useState("");
   if (folderLoading && folders) {
     return <div>Loading</div>;
   }
@@ -28,8 +31,8 @@ const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
               <div key={index} className="w-full py-1.5 h-auto">
                 <ChatFolder
                   onRowClick={(name) => {
-                    folder.id && setFolderId(folder.id.toString());
-                    showChatFolder(name);
+                    folder.id &&
+                      showChatFolder({ name, folder_id: folder.id.toString() });
                   }}
                   id={folder.id}
                   currentName={folder.folder_name}
@@ -54,8 +57,8 @@ const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
                 id={folder.id}
                 currentName={folder.folder_name}
                 onRowClick={(name) => {
-                  folder.id && setFolderId(folder.id.toString());
-                  showChatFolder(name);
+                  folder.id &&
+                    showChatFolder({ name, folder_id: folder.id.toString() });
                 }}
               />
             </div>

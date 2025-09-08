@@ -31,7 +31,6 @@ export const useFolderCreate = () => {
       queryClient.invalidateQueries({ queryKey: ["folders"] });
     },
   });
-
   return mutation;
 };
 export const useFolderDelete = () => {
@@ -54,7 +53,6 @@ export const useFolderDelete = () => {
 };
 export const useFolderRename = () => {
   const queryClient = useQueryClient();
-
   const mutation = useMutation({
     mutationFn: async (folder: RenameFolder) => {
       const res = await client.api.folder.$patch({

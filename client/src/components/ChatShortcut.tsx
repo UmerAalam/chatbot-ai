@@ -66,13 +66,18 @@ function ChatShortcut(props: { id?: number; name: string }) {
       )}
       <div className="w-full h-full items-center flex justify-between">
         {isRenaming ? (
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            className="bg-transparent outline-none border-b border-white/20"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         ) : (
           name
         )}
         {isRenaming ? (
           <FaCheck
             onClick={() => {
+              if (name.trim() === "") return;
               props.id &&
                 renameChat({
                   id: props.id,

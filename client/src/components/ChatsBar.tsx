@@ -47,7 +47,8 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
-  const handleShowChatFolder = () => {
+  const handleShowChatFolder = (name: string) => {
+    setFolderName(name);
     setShowChatFolder(!showFolderAlert);
   };
   if (isLoading && folderLoading) {
@@ -105,12 +106,14 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
           <div className="text-white w-full px-2.5 flex justify-between items-center mt-3 font-semibold">
             {showChatFolder ? (
               <div className="flex w-full justify-between items-center">
-                {folderName}
-                <div className="flex gap-3 items-center">
+                <div className="flex gap-1 items-center p-1 pl-0.5 w-18 justify-center rounded-full backdrop-blur-2xl">
+                  {folderName}
+                </div>
+                <div className="flex gap-1 items-center p-1 rounded-full backdrop-blur-2xl">
                   <FaArrowLeft
                     onClick={() => setShowChatFolder(!showChatFolder)}
-                    className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
-                    size={24}
+                    className="hover:bg-gray-700 text-white/80 rounded-full backdrop-blur-2xl p-1.5"
+                    size={26}
                   />
                   <IoMdAdd
                     onClick={() => setShowChatAlert(true)}
@@ -138,12 +141,9 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                 {!searchTerm.trim() &&
                   folders?.map((folder, index) => {
                     return (
-                      <div
-                        onClick={() => handleShowChatFolder()}
-                        key={index}
-                        className="w-full py-1.5 h-auto"
-                      >
+                      <div key={index} className="w-full py-1.5 h-auto">
                         <ChatFolder
+                          onRowClick={(name) => handleShowChatFolder(name)}
                           id={folder.id}
                           currentName={folder.folder_name}
                         />
@@ -152,20 +152,17 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                   })}
                 {searchTerm.trim() &&
                   folders
-                    ?.filter((folder) =>
-                      folder.folder_name
+                    ?.filter((f) =>
+                      f.folder_name
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()),
                     )
-                    .map((folder, index) => (
-                      <div
-                        onClick={() => handleShowChatFolder()}
-                        className="w-full py-1.5 h-auto"
-                        key={index}
-                      >
+                    .map((folder) => (
+                      <div className="w-full py-1.5 h-auto" key={folder.id}>
                         <ChatFolder
                           id={folder.id}
                           currentName={folder.folder_name}
+                          onRowClick={handleShowChatFolder}
                         />
                       </div>
                     ))}

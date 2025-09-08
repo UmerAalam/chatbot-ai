@@ -1,6 +1,6 @@
 import ChatBarSearch from "./ChatBarSearch";
 import { IoMdAdd } from "react-icons/io";
-import { HTMLAttributes, useState } from "react";
+import { HTMLAttributes, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowLeft } from "react-icons/fa";
 import AddAlert from "./AddAlert";
@@ -14,7 +14,6 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 }
 function ChatsBar({ handleBtn, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
-  const email = localStorage.getItem("email") || "";
   const { mutate: createChat } = useChatBarChatCreate();
   const { mutate: createFolder } = useFolderCreate();
   const [showFolderAlert, setShowFolderAlert] = useState(false);
@@ -22,8 +21,9 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [showChatFolder, setShowChatFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [folderId, setFolderId] = useState("");
+  const [email, setEmail] = useState("");
+  useEffect(() => setEmail(localStorage.getItem("email") || ""), []);
   const handleChatSubmit = (text: string) => {
-    console.log(text);
     createChat({
       chat_name: text,
       folder_id: "DEFAULT",
@@ -130,7 +130,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
               </div>
             ) : (
               <>
-                Folders
+                <div className="flex pt-0.5">Folders</div>
                 <IoMdAdd
                   onClick={() => setShowFolderAlert(true)}
                   className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
@@ -151,7 +151,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                 }}
               />
               <div className="text-white w-full px-2.5 flex justify-between items-center mt-3 font-semibold">
-                Chats
+                <div className="flex pt-0.5">Chats</div>
                 <IoMdAdd
                   onClick={() => setShowChatAlert(true)}
                   className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"

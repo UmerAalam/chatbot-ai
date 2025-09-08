@@ -18,13 +18,11 @@ const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
   }
   const items = useMemo(() => {
     if (!folders) return [];
-
     const list = searchTerm.trim()
       ? folders.filter((folder) =>
           folder.folder_name.toLowerCase().includes(searchTerm.toLowerCase()),
         )
       : folders;
-
     return [...list].sort((a, b) => {
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;

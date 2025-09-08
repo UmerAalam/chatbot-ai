@@ -26,6 +26,7 @@ export const useChatBarChatCreate = () => {
       queryClient.invalidateQueries({ queryKey: ["chatbarchats"] });
     },
   });
+
   return mutation;
 };
 export const useChatBarChatDelete = () => {
@@ -77,7 +78,7 @@ const userChatsByFolderID = (folder_id: string) => {
       const data = await res.json();
       return data.data as ChatBarChat[];
     },
-    queryKey: ["chatbarchats"],
+    queryKey: ["chatbarchats", folder_id],
     enabled: !!folder_id,
   });
 };

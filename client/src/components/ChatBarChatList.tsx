@@ -23,7 +23,7 @@ const ChatBarChatList = ({ searchTerm }: Props) => {
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateB - dateA;
     });
-  }, [chatbarchats, searchTerm]);
+  }, [searchTerm, chatbarchats]);
   return (
     <div className="w-full">
       {items.map((chat) => (

@@ -55,7 +55,13 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   }
   return (
     <>
-      {showFolderAlert && <AddAlert isChat={false} cancelBtn={handleCancel} />}
+      {showFolderAlert && (
+        <AddAlert
+          isChat={false}
+          cancelBtn={handleCancel}
+          addBtn={(name) => handleFolderSubmit(name.toString())}
+        />
+      )}
       {showChatAlert && (
         <AddAlert
           isChat={true}

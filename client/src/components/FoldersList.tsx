@@ -1,5 +1,6 @@
 import { useFolders } from "src/query/folder";
 import ChatFolder from "./ChatFolder";
+import { useMemo } from "react";
 
 interface FolderProps {
   name: string;
@@ -12,57 +13,41 @@ interface Props {
 const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
   const email = localStorage.getItem("email") || "";
   const { data: folders, isLoading: folderLoading } = useFolders(email);
-  if (folderLoading && folders) {
-    return <div>Loading</div>;
+  if (folderLoading) {
+    return <div>Loading...</div>;
   }
+  const items = useMemo(() => {
+    if (!folders) return [];
+
+    const list = searchTerm.trim()
+      ? folders.filter((folder) =>
+          folder.folder_name.toLowerCase().includes(searchTerm.toLowerCase()),
+        )
+      : folders;
+
+    return [...list].sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA;
+    });
+  }, [folders, searchTerm]);
+
   return (
     <div className="w-full">
-      {!searchTerm.trim() &&
-        folders
-          ?.sort((a, b) => {
-            const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-            const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-            return dateA - dateB;
-          })
-          .reverse()
-          .map((folder, index) => {
-            return (
-              <div key={index} className="w-full py-1.5 h-auto">
-                <ChatFolder
-                  onRowClick={(name) => {
-                    folder.id &&
-                      showChatFolder({ name, folder_id: folder.id.toString() });
-                  }}
-                  id={folder.id}
-                  currentName={folder.folder_name}
-                />
-              </div>
-            );
-          })}
-      {searchTerm.trim() &&
-        folders
-          ?.filter((f) =>
-            f.folder_name.toLowerCase().includes(searchTerm.toLowerCase()),
-          )
-          .sort((a, b) => {
-            const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-            const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-            return dateA - dateB;
-          })
-          .reverse()
-          .map((folder) => (
-            <div className="w-full py-1.5 h-auto" key={folder.id}>
-              <ChatFolder
-                id={folder.id}
-                currentName={folder.folder_name}
-                onRowClick={(name) => {
-                  folder.id &&
-                    showChatFolder({ name, folder_id: folder.id.toString() });
-                }}
-              />
-            </div>
-          ))}
+      {items.map((folder) => (
+        <div key={folder.id} className="w-full py-1.5 h-auto">
+          <ChatFolder
+            id={folder.id}
+            currentName={folder.folder_name}
+            onRowClick={(name) => {
+              folder.id &&
+                showChatFolder({ name, folder_id: folder.id.toString() });
+            }}
+          />
+        </div>
+      ))}
     </div>
   );
 };
+
 export default FoldersList;

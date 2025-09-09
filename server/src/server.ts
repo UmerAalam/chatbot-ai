@@ -4,9 +4,10 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import "dotenv/config";
 import { openaiRoute } from "./modules/openAI/openaiRoute";
-import { chatbarRoute } from "./modules/chat/chatbarRoute";
 import { createClient } from "@supabase/supabase-js";
 import { folderRoute } from "./modules/folder/folder.route";
+import { chatbarRoute } from "./modules/chatbar/chatbarRoute";
+import { chatRoute } from "./modules/chats/chat.route";
 
 const supabaseUrl = process.env.SUPABASE_URL || "";
 const supabaseKey = process.env.SUPABASE_API_KEY || "";
@@ -25,7 +26,8 @@ const app = new Hono()
   )
   .route("/api", openaiRoute)
   .route("/api", chatbarRoute)
-  .route("/api", folderRoute);
+  .route("/api", folderRoute)
+  .route("/api", chatRoute);
 
 export type AppType = typeof app;
 

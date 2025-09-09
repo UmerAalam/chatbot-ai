@@ -1,20 +1,17 @@
-import { useAppDispatch } from "src/app/hooks/hook";
 import { Button } from "@/components/ui/button";
 import aiIcon from "../../public/icons8-ai.svg";
 import { FaArrowRight } from "react-icons/fa";
 import { useLayoutEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
-import { addPromptToChat } from "src/app/slices/chatSlice";
+
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   searchBtn?: (prompt: string) => void;
 }
-
 function SearchBar({ searchBtn, ...rest }: Props) {
   const [multiLine, setMultiLine] = useState(false);
   const [prompt, setPrompt] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const oneLineHeightRef = useRef<number | null>(null);
-  const dispatch = useAppDispatch();
 
   useLayoutEffect(() => {
     const el = textareaRef.current;
@@ -38,7 +35,6 @@ function SearchBar({ searchBtn, ...rest }: Props) {
       return;
     }
     searchBtn && searchBtn(prompt);
-    dispatch(addPromptToChat(prompt));
     setPrompt("");
   };
   return (

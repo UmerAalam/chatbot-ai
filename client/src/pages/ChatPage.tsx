@@ -13,7 +13,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
-import { useChatsByChatBarID } from "src/query/chats";
+import { useChatCreate, useChatsByChatBarID } from "src/query/chats";
 
 interface Data {
   data: {
@@ -22,12 +22,14 @@ interface Data {
 }
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
+  const email = localStorage.getItem("email") || "";
   const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
+  const { mutate: createChat } = useChatCreate();
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const tlRef = useRef<gsap.core.Timeline | null>(null);
-  const [_, setText] = useState("");
+  const [text, setText] = useState("");
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
@@ -54,6 +56,29 @@ function ChatPage(props: { chatbar_id?: number }) {
       ease: "power1",
     });
   }, []);
+  useGSAP(() => {
+    if (isOpen) {
+      gsap.fromTo(
+        "#side-panel",
+        {
+          width: 0,
+        },
+        {
+          width: "30%",
+        },
+      );
+    } else {
+      gsap.fromTo(
+        "#side-panel",
+        {
+          width: "30%",
+        },
+        {
+          width: 0,
+        },
+      );
+    }
+  }, [isOpen]);
   async function streamAnswer(prompt: string, onChunk: (s: string) => void) {
     const res = await fetch("/api/result", {
       method: "POST",
@@ -70,10 +95,20 @@ function ChatPage(props: { chatbar_id?: number }) {
       onChunk(decoder.decode(value, { stream: true }));
     }
   }
-  const handleSearchBtn = async (prompt: string) => {
+  const handleChatSubmit = async (prompt: string) => {
     setText("");
+    createChat({
+      text: prompt,
+      chatbar_id,
+      email,
+    });
     const answer: Data = await axios.post("/api/result", { prompt });
     setText(answer.data.text);
+    createChat({
+      text: text.toString(),
+      chatbar_id,
+      email,
+    });
     // streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
   };
   const handleChatPanel = () => {
@@ -112,41 +147,47 @@ function ChatPage(props: { chatbar_id?: number }) {
   });
   return (
     <>
-      <div className="w-full flex flex-row h-full min-h-screen bg-black relative">
-        <div>
-          <Avatar />
-        </div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.4),_transparent_40%)]"></div>
-        <div className="flex flex-col gap-3 justify-center items-center w-full h-full">
-          <div className="w-full px-50 flex flex-col gap-5 mt-20 justify-end">
-            {renderChatSections}
-          </div>
-          <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
-            <div
-              className={`flex justify-center items-center w-full mt-10 ${chats && chats.length > 0 && "mb-20"}`}
-            >
-              <SearchBar searchBtn={(prompt) => handleSearchBtn(prompt)} />
-            </div>
-            {chats?.length === 0 && <ChatPanel />}
-          </div>
-        </div>
-        {!isOpen && (
-          <Button
-            onClick={handleChatPanel}
-            id="arrow-Btn"
-            className="absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl"
+      <div className="flex">
+        <div id="side-panel" className="flex bg-black w-4/10">
+          <aside
+            ref={panelRef}
+            id="chat-panel"
+            aria-hidden={!isOpen}
+            className="relative left-0 top-0 w-full pointer-events-auto"
           >
-            <FaArrowRight className="text-white/80" />
-          </Button>
-        )}
-        <aside
-          ref={panelRef}
-          id="chat-panel"
-          className="fixed left-0 top-0 w-full pointer-events-auto"
-          aria-hidden={!isOpen}
-        >
-          <ChatsBar handleBtn={handleChatPanel} />
-        </aside>
+            <ChatsBar handleBtn={handleChatPanel} />
+          </aside>
+        </div>
+        <div className="w-full flex flex-row h-full min-h-screen bg-black relative">
+          <div>
+            <Avatar />
+          </div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.4),_transparent_40%)]"></div>
+          <div className="flex flex-col gap-3 justify-center items-center w-full h-full">
+            <div
+              className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
+            >
+              {renderChatSections}
+            </div>
+            <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
+              <div
+                className={`flex justify-center items-center w-full mt-10 ${chats && chats.length > 0 && "mb-20"}`}
+              >
+                <SearchBar searchBtn={(prompt) => handleChatSubmit(prompt)} />
+              </div>
+              {chats?.length === 0 && <ChatPanel />}
+            </div>
+          </div>
+          {!isOpen && (
+            <Button
+              onClick={handleChatPanel}
+              id="arrow-Btn"
+              className="absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl"
+            >
+              <FaArrowRight className="text-white/80" />
+            </Button>
+          )}
+        </div>
       </div>
     </>
   );

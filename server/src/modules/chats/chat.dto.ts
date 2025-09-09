@@ -1,19 +1,19 @@
 import z from "zod";
 
 export const chatSchema = z.object({
-  text: z.string().max(100).nonempty(),
-  chatbar_id: z.number().nonnegative(),
+  text: z.string().nonempty(),
+  chatbar_id: z.coerce.string().nonempty(),
   email: z.string().nonempty(),
 });
 export const chatsByChatBarChatIDSchema = z.object({
-  chatbar_id: z.string().nonempty(),
+  chatbar_id: z.coerce.string().nonempty(),
 });
 export const deleteChatSchema = z.object({
-  chatbar_id: z.number().nonnegative(),
+  chatbar_id: z.coerce.string().nonempty(),
 });
 export const renameChatSchema = z.object({
   id: z.number().nonnegative(),
-  text: z.string().max(100).nonempty(),
+  text: z.string().nonempty(),
 });
 
 export interface Chat extends z.infer<typeof chatSchema> {}

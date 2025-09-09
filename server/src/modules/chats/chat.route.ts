@@ -35,6 +35,6 @@ export const chatRoute = new Hono()
     const res = await supabase
       .from("chats")
       .select()
-      .eq("chatbar_id", chatbar_id);
+      .eq("chatbar_id", Number(chatbar_id));
     return c.json(res, 200);
   });

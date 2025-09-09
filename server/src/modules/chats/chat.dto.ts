@@ -6,7 +6,7 @@ export const chatSchema = z.object({
   email: z.string().nonempty(),
 });
 export const chatsByChatBarChatIDSchema = z.object({
-  chatbar_id: z.number().nonnegative(),
+  chatbar_id: z.string().nonempty(),
 });
 export const deleteChatSchema = z.object({
   chatbar_id: z.number().nonnegative(),

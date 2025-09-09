@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { FaArrowRight } from "react-icons/fa";
-import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
-import { addAnswerToChat, Chat } from "src/app/slices/chatSlice";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AnswerPrompt from "src/components/AnswerPrompt";
 import ChatPanel from "src/components/ChatPanel";
 import PromptSection from "src/components/PromptSection";
@@ -15,21 +13,21 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
+import { useChatsByChatBarID } from "src/query/chats";
 
 interface Data {
   data: {
     text: string;
   };
 }
-
-function ChatPage(props: { chatbar_id?: string }) {
+function ChatPage(props: { chatbar_id?: number }) {
+  const chatbar_id = props.chatbar_id || 0;
+  const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const tlRef = useRef<gsap.core.Timeline | null>(null);
-  const chats: Chat[] = useAppSelector((state) => state.chats);
-  const dispatch = useAppDispatch();
-  const [text, setText] = useState("");
+  const [_, setText] = useState("");
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
@@ -46,6 +44,7 @@ function ChatPage(props: { chatbar_id?: string }) {
     }
     return () => subscription.unsubscribe();
   }, []);
+
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -68,7 +67,6 @@ function ChatPage(props: { chatbar_id?: string }) {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
-      dispatch(addAnswerToChat(text));
       onChunk(decoder.decode(value, { stream: true }));
     }
   }
@@ -88,15 +86,27 @@ function ChatPage(props: { chatbar_id?: string }) {
       setIsOpen(false);
     }
   };
-  const renderChatSections = chats.map((chat, index) => {
+  const items = useMemo(() => {
+    if (!chats) return [];
+    return [...chats].sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateA - dateB;
+    });
+  }, [chats]);
+  const renderChatSections = items.map((chat, index) => {
+    const isPrompt = index % 2 === 0;
     return (
       <div key={index} className="flex flex-col gap-2 w-auto h-auto">
-        <div className="flex justify-end">
-          <PromptSection prompt={chat.prompt} />
-        </div>
-        <div className="flex justify-start">
-          <AnswerPrompt answer={text} />
-        </div>
+        {isPrompt ? (
+          <div className="flex justify-end">
+            <PromptSection prompt={chat.text} />
+          </div>
+        ) : (
+          <div className="flex justify-start">
+            <AnswerPrompt answer={chat.text} />
+          </div>
+        )}
       </div>
     );
   });
@@ -113,11 +123,11 @@ function ChatPage(props: { chatbar_id?: string }) {
           </div>
           <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
             <div
-              className={`flex justify-center items-center w-full mt-10 ${chats.length > 0 && "mb-20"}`}
+              className={`flex justify-center items-center w-full mt-10 ${chats && chats.length > 0 && "mb-20"}`}
             >
               <SearchBar searchBtn={(prompt) => handleSearchBtn(prompt)} />
             </div>
-            {chats.length === 0 && <ChatPanel />}
+            {chats?.length === 0 && <ChatPanel />}
           </div>
         </div>
         {!isOpen && (

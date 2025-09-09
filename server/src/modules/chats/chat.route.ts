@@ -31,7 +31,7 @@ export const chatRoute = new Hono()
     return c.json(res, 200);
   })
   .get("/", zValidator("query", chatsByChatBarChatIDSchema), async (c) => {
-    const chatbar_id = c.req.query("chatbar_id");
+    const chatbar_id = c.req.valid("query").chatbar_id;
     const res = await supabase
       .from("chats")
       .select()

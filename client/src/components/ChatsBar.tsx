@@ -1,6 +1,6 @@
 import ChatBarSearch from "./ChatBarSearch";
 import { IoMdAdd } from "react-icons/io";
-import { HTMLAttributes, useEffect, useState } from "react";
+import { HTMLAttributes, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowLeft } from "react-icons/fa";
 import AddAlert from "./AddAlert";
@@ -90,8 +90,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
         [&::-webkit-scrollbar-track]:rounded-2xl
         [&::-webkit-scrollbar-thumb]:bg-gray-700/50
         [&::-webkit-scrollbar-thumb]:rounded-2xl
-        [&::-webkit-scrollbar-track]:mt-2
-        "
+        [&::-webkit-scrollbar-track]:mt-2"
       >
         <div className="flex justify-between gap-3 px-4.5 items-center mt-5 w-full h-12 rounded-2xl bg-gray-700/20 backdrop-blur-2xl">
           <div className="flex items-center gap-3">

@@ -25,7 +25,9 @@ function ChatPage(props: { chatbar_id?: number }) {
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
   const [session, setSession] = useState<Session | null>(null);
-  const [done, setDone] = useState<boolean>(false);
+  const [done, setDone] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [prompt, setPrompt] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -93,6 +95,24 @@ function ChatPage(props: { chatbar_id?: number }) {
       onChunk(decoder.decode(value, { stream: true }));
     }
   }
+  const handleChatPanel = () => {
+    const tl = tlRef.current!;
+    if (!isOpen) {
+      tl.play(0);
+      setIsOpen(true);
+    } else {
+      tl.reverse();
+      setIsOpen(false);
+    }
+  };
+  const items = useMemo(() => {
+    if (!chats) return [];
+    return [...chats].sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateA - dateB;
+    });
+  }, [chats]);
   const handleChatSubmit = async (prompt: string) => {
     setText("");
     createChat({
@@ -111,31 +131,8 @@ function ChatPage(props: { chatbar_id?: number }) {
       });
     }
   };
-  const handleChatPanel = () => {
-    const tl = tlRef.current!;
-    if (!isOpen) {
-      tl.play(0);
-      setIsOpen(true);
-    } else {
-      tl.reverse();
-      setIsOpen(false);
-    }
-  };
-  const items = useMemo(() => {
-    if (!chats) return [];
-    return [...chats]
-      .sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return dateA - dateB;
-      })
-      .reverse();
-  }, [chats]);
-
   const renderChatSections = items.map((chat, index) => {
     const isPrompt = chat.role === "user";
-    const isLast = index === items.length - 1 && !isPrompt;
-
     return (
       <div key={index} className="flex flex-col gap-2 w-auto h-auto">
         {isPrompt ? (
@@ -144,7 +141,7 @@ function ChatPage(props: { chatbar_id?: number }) {
           </div>
         ) : (
           <div className="flex justify-start">
-            <AnswerPrompt answer={isLast ? text : chat.text} />
+            <AnswerPrompt answer={chat.text} />
           </div>
         )}
       </div>
@@ -173,6 +170,11 @@ function ChatPage(props: { chatbar_id?: number }) {
               className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
             >
               {renderChatSections}
+              {prompt && (
+                <div className="flex justify-end">
+                  <PromptSection prompt={text} />
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
               <div

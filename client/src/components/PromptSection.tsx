@@ -7,7 +7,7 @@ function PromptSection(props: { prompt?: string }) {
 
       {props.prompt && (
         <CopyToClipBoard
-          className="cursor-pointer hover:bg-gray-700/50 ml-2 rounded-md"
+          className="cursor-pointer hover:bg-gray-700/50 p-1 ml-2 rounded-md"
           textToCopy={props.prompt}
         />
       )}

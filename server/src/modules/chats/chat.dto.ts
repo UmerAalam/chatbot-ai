@@ -4,6 +4,7 @@ export const chatSchema = z.object({
   text: z.string().nonempty(),
   chatbar_id: z.coerce.string().nonempty(),
   email: z.string().nonempty(),
+  role: z.string().nonempty().default("user"),
 });
 export const chatsByChatBarChatIDSchema = z.object({
   chatbar_id: z.coerce.string().nonempty(),

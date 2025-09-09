@@ -12,6 +12,7 @@ export interface Chat {
   chatbar_id: number;
   created_at?: string;
   email: string;
+  role: string;
 }
 interface RenameChat {
   id: number;
@@ -26,6 +27,7 @@ export const useChatCreate = () => {
           chatbar_id: chat.chatbar_id,
           text: chat.text,
           email: chat.email,
+          role: chat.role,
         },
       });
       if (!res.ok) {

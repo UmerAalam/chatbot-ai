@@ -5,7 +5,6 @@ import AnswerPrompt from "src/components/AnswerPrompt";
 import ChatPanel from "src/components/ChatPanel";
 import PromptSection from "src/components/PromptSection";
 import SearchBar from "src/components/SearchBar";
-import axios from "axios";
 import ChatsBar from "src/components/ChatsBar";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -15,11 +14,6 @@ import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
 import { useChatCreate, useChatsByChatBarID } from "src/query/chats";
 
-interface Data {
-  data: {
-    text: string;
-  };
-}
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
   const email = localStorage.getItem("email") || "";
@@ -105,14 +99,15 @@ function ChatPage(props: { chatbar_id?: number }) {
       text: prompt,
       chatbar_id,
       email,
+      role: "user",
     });
     streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
-    if (done) {
-      console.log("Chat Done Now Uploading To The Database");
+    if (done === true) {
       createChat({
         text: text.toString(),
         chatbar_id,
         email,
+        role: "assistant",
       });
     }
   };
@@ -135,7 +130,7 @@ function ChatPage(props: { chatbar_id?: number }) {
     });
   }, [chats]);
   const renderChatSections = items.map((chat, index) => {
-    const isPrompt = index % 2 === 0;
+    const isPrompt = chat.role === "user";
     return (
       <div key={index} className="flex flex-col gap-2 w-auto h-auto">
         {isPrompt ? (

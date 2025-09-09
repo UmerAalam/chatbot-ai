@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
@@ -6,97 +7,138 @@ import {
   useChatBarChatDelete,
   useChatBarChatRename,
 } from "src/query/chatbarchat";
-function ChatShortcut(props: { id?: number; name: string }) {
-  const [showDropdown, setShowDropDown] = useState(false);
+
+type Props = {
+  id?: number;
+  name: string;
+};
+
+function ChatShortcut({ id, name: currentName }: Props) {
+  const [open, setOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
-  const [name, setName] = useState(props.name);
+  const [name, setName] = useState(currentName);
+  const navigate = useNavigate();
   const { mutate: deleteChat } = useChatBarChatDelete();
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
   const { mutate: renameChat } = useChatBarChatRename();
+
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowDropDown(false);
-      }
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (menuRef.current?.contains(t)) return;
+      if (triggerRef.current?.contains(t)) return;
+      setOpen(false);
     };
-    if (showDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showDropdown]);
-  const handleChatDelete = () => {
-    props.id && deleteChat(props.id);
-    setShowDropDown(false);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  const handleDelete = () => {
+    if (id != null) deleteChat(id);
+    setOpen(false);
   };
-  const handleRenaming = () => {
-    setShowDropDown(false);
+
+  const startRenaming = () => {
+    setOpen(false);
     setIsRenaming(true);
+    setName(currentName);
   };
+
+  const confirmRename = () => {
+    const trimmed = name.trim();
+    if (id != null && trimmed) {
+      renameChat({ id, chat_name: trimmed });
+    }
+    setIsRenaming(false);
+  };
+
   return (
     <div className="relative flex items-center text-white/80 font-semibold px-3 w-full h-12 bg-gray-700/50 rounded-2xl border-l-8 border-white outline-2 outline-transparent hover:outline-white">
-      {showDropdown && (
+      {open && (
         <div
-          ref={dropdownRef}
-          className="absolute right-0 top-10 bg-gray-800/80 backdrop-blur-2xl text-white/90 rounded-lg shadow-lg border border-gray-700/50 w-40 z-10"
+          ref={menuRef}
+          className="absolute right-0 top-12 bg-gray-800/80 backdrop-blur-2xl text-white/90 rounded-lg shadow-lg border border-gray-700/50 w-40 z-50"
+          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          role="menu"
         >
           <ul className="flex flex-col text-sm">
             <li
-              onClick={handleRenaming}
+              onClick={startRenaming}
               className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-t-lg"
+              role="menuitem"
             >
               Rename
             </li>
-            <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Move</li>
             <li
-              onClick={() => handleChatDelete()}
-              className="flex justify-start items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-b-lg text-red-400 hover:text-red-300"
+              className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+              role="menuitem"
+            >
+              Move
+            </li>
+            <li
+              onClick={handleDelete}
+              className="flex items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-b-lg text-red-400 hover:text-red-300"
+              role="menuitem"
             >
               Delete
-              <MdDelete className="ml-2 mb-0.5 flex" size={18} />
+              <MdDelete className="ml-2" size={16} />
             </li>
           </ul>
         </div>
       )}
-      <div className="w-full h-full items-center flex justify-between">
+
+      <div
+        onClick={() => navigate({ to: `/chatpage/${id}` })}
+        className="select-none w-full h-full flex items-center justify-between"
+      >
         {isRenaming ? (
-          <input
-            className="bg-transparent outline-none border-b border-white/20"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="bg-transparent outline-none border-b border-white/20"
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && confirmRename()}
+            />
+            <FaCheck
+              onClick={confirmRename}
+              className="text-white/80 rounded-full hover:bg-gray-700/70 p-1 cursor-pointer"
+              size={24}
+            />
+          </>
         ) : (
-          name
-        )}
-        {isRenaming ? (
-          <FaCheck
-            onClick={() => {
-              if (name.trim() === "") return;
-              props.id &&
-                renameChat({
-                  id: props.id,
-                  chat_name: name,
-                });
-              setIsRenaming(false);
-            }}
-            className="text-white/80 rounded-full hover:bg-gray-700/70 p-1 cursor-pointer"
-            size={24}
-          />
-        ) : (
-          <HiDotsHorizontal
-            onClick={() => setShowDropDown(!showDropdown)}
-            className="text-white/80 rounded-full hover:bg-gray-700/70 p-1 cursor-pointer"
-            size={24}
-          />
+          <>
+            <button
+              type="button"
+              className="flex-1 text-left truncate cursor-pointer hover:opacity-90"
+              title={currentName}
+            >
+              {currentName}
+            </button>
+
+            <button
+              ref={triggerRef}
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={open}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                setOpen((v) => !v);
+              }}
+              className="rounded-full hover:bg-gray-700/70 p-1 cursor-pointer"
+            >
+              <HiDotsHorizontal className="text-white/80" size={16} />
+            </button>
+          </>
         )}
       </div>
     </div>
   );
 }
+
 export default ChatShortcut;

@@ -123,11 +123,13 @@ function ChatPage(props: { chatbar_id?: number }) {
   };
   const items = useMemo(() => {
     if (!chats) return [];
-    return [...chats].sort((a, b) => {
-      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return dateA - dateB;
-    });
+    return [...chats]
+      .sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateA - dateB;
+      })
+      .reverse();
   }, [chats]);
 
   const renderChatSections = items.map((chat, index) => {

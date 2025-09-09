@@ -31,6 +31,7 @@ function ChatPage(props: { chatbar_id?: number }) {
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
   const [session, setSession] = useState<Session | null>(null);
+  const [done, setDone] = useState<boolean>(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -91,7 +92,10 @@ function ChatPage(props: { chatbar_id?: number }) {
     const decoder = new TextDecoder();
     while (true) {
       const { value, done } = await reader.read();
-      if (done) break;
+      if (done) {
+        setDone(true);
+        break;
+      }
       onChunk(decoder.decode(value, { stream: true }));
     }
   }
@@ -102,14 +106,15 @@ function ChatPage(props: { chatbar_id?: number }) {
       chatbar_id,
       email,
     });
-    const answer: Data = await axios.post("/api/result", { prompt });
-    setText(answer.data.text);
-    createChat({
-      text: text.toString(),
-      chatbar_id,
-      email,
-    });
-    // streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
+    streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
+    if (done) {
+      console.log("Chat Done Now Uploading To The Database");
+      createChat({
+        text: text.toString(),
+        chatbar_id,
+        email,
+      });
+    }
   };
   const handleChatPanel = () => {
     const tl = tlRef.current!;

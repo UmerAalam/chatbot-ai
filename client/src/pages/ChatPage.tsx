@@ -124,41 +124,30 @@ function ChatPage(props: { chatbar_id?: number }) {
   const items = useMemo(() => {
     if (!chats) return [];
     return [...chats].sort((a, b) => {
-      const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return tA - tB;
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateA - dateB;
     });
   }, [chats]);
 
-  const endsWithUser = items.at(-1)?.role === "user";
-
-  const lastAssistantIdx = useMemo(() => {
-    let idx = -1;
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].role === "assistant") idx = i;
-    }
-    return idx;
-  }, [items]);
-
   const renderChatSections = items.map((chat, index) => {
     const isPrompt = chat.role === "user";
-    const useLiveText = !endsWithUser && index === lastAssistantIdx && !!text;
+    const isLast = index === items.length - 1 && !isPrompt;
 
     return (
-      <div key={chat.id} className="flex flex-col gap-2 w-auto h-auto">
+      <div key={index} className="flex flex-col gap-2 w-auto h-auto">
         {isPrompt ? (
           <div className="flex justify-end">
             <PromptSection prompt={chat.text} />
           </div>
         ) : (
           <div className="flex justify-start">
-            <AnswerPrompt answer={useLiveText ? text : chat.text} />
+            <AnswerPrompt answer={isLast ? text : chat.text} />
           </div>
         )}
       </div>
     );
   });
-
   return (
     <>
       <div className="flex">
@@ -182,11 +171,6 @@ function ChatPage(props: { chatbar_id?: number }) {
               className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
             >
               {renderChatSections}
-              {endsWithUser && !!text && (
-                <div className="flex justify-start">
-                  <AnswerPrompt answer={text} />
-                </div>
-              )}{" "}
             </div>
             <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
               <div

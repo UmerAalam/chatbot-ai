@@ -14,6 +14,7 @@ import gsap from "gsap";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
+import { useNavigate } from "@tanstack/react-router";
 
 interface Data {
   data: {
@@ -21,27 +22,28 @@ interface Data {
   };
 }
 
-function ChatPage() {
+function ChatPage(props: { chatbar_id?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const chats: Chat[] = useAppSelector((state) => state.chats);
   const dispatch = useAppDispatch();
   const [text, setText] = useState("");
-
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-
+    if (session) {
+      navigate({ to: "/" });
+    }
     return () => subscription.unsubscribe();
   }, []);
   useGSAP(() => {

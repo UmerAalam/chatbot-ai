@@ -6,11 +6,12 @@ import {
 } from "@tanstack/react-query";
 import { client } from "src/lib/client";
 
-interface Chat {
+export interface Chat {
   id?: number;
   text: string;
   chatbar_id: number;
   created_at?: string;
+  email: string;
 }
 interface RenameChat {
   id: number;
@@ -21,7 +22,11 @@ export const useChatCreate = () => {
   const mutation = useMutation({
     mutationFn: async (chat: Chat) => {
       const res = await client.api.chats.$post({
-        json: { chatbar_id: chat.chatbar_id, text: chat.text },
+        json: {
+          chatbar_id: chat.chatbar_id,
+          text: chat.text,
+          email: chat.email,
+        },
       });
       if (!res.ok) {
         throw new Error("Error while posting chat");

@@ -13,11 +13,14 @@ import { supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
 import { useChatCreate, useChatsByChatBarID } from "src/query/chats";
-
+import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
+import { addChatToChats, Chat } from "src/app/slices/chatSlice";
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
   const email = localStorage.getItem("email") || "";
-  const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
+  const { data: chatsData } = useChatsByChatBarID(chatbar_id.toString());
+  const dispatch = useAppDispatch();
+  const chats = useAppSelector((state) => state.chats);
   const { mutate: createChat } = useChatCreate();
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -26,11 +29,6 @@ function ChatPage(props: { chatbar_id?: number }) {
   const [text, setText] = useState("");
   const [session, setSession] = useState<Session | null>(null);
   const [done, setDone] = useState(false);
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [prompt, setPrompt] = useState("");
-  const [answer, setAnswer] = useState("");
-
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -45,6 +43,18 @@ function ChatPage(props: { chatbar_id?: number }) {
     }
     return () => subscription.unsubscribe();
   }, []);
+  useEffect(() => {
+    chatsData
+      ?.sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateA - dateB;
+      })
+      .map((chat) => {
+        dispatch(addChatToChats(chat));
+      });
+  }, [chatsData, props.chatbar_id]);
+  console.log(chats);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -114,18 +124,23 @@ function ChatPage(props: { chatbar_id?: number }) {
       return dateA - dateB;
     });
   }, [chats, props.chatbar_id && props.chatbar_id]);
-  const handleChatSubmit = async (prompt: string) => {
+  const handleChatSubmit = async (text: string) => {
+    const chat: Chat = {
+      email,
+      text,
+    };
+    dispatch(addChatToChats(chat));
     setText("");
     createChat({
-      text: prompt,
+      text,
       chatbar_id,
       email,
       role: "user",
     });
-    streamAnswer(prompt, (chunk) => setText((prev) => prev + chunk));
+    streamAnswer(text, (chunk) => setText((prev) => prev + chunk));
     if (done === true) {
       createChat({
-        text: text.toString(),
+        text,
         chatbar_id,
         email,
         role: "assistant",
@@ -171,16 +186,6 @@ function ChatPage(props: { chatbar_id?: number }) {
               className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
             >
               {renderChatSections}
-              {/* {showPrompt && ( */}
-              {/*   <div className="flex justify-end"> */}
-              {/*     <PromptSection prompt={prompt} /> */}
-              {/*   </div> */}
-              {/* )} */}
-              {/* {showAnswer && ( */}
-              {/*   <div className="flex justify-start"> */}
-              {/*     <AnswerPrompt answer={answer} /> */}
-              {/*   </div> */}
-              {/* )} */}
             </div>
             <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
               <div

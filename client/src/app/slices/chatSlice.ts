@@ -7,7 +7,7 @@ export interface Chat {
   chatbar_id?: number;
   created_at?: string;
   email: string;
-  role?: string;
+  role: string;
 }
 const initialState: Chat[] = [];
 export const chatsSlice = createSlice({

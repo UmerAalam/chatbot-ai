@@ -12,7 +12,7 @@ export interface Chat {
   chatbar_id: number;
   created_at?: string;
   email: string;
-  role?: string;
+  role: string;
 }
 interface RenameChat {
   id: number;

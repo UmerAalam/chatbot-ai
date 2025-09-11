@@ -29,6 +29,7 @@ function ChatPage(props: { chatbar_id?: number }) {
   const [text, setText] = useState("");
   const [session, setSession] = useState<Session | null>(null);
   const [done, setDone] = useState(false);
+  const [lastChat, setLastChat] = useState<Chat | null>(null);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -54,7 +55,6 @@ function ChatPage(props: { chatbar_id?: number }) {
         dispatch(addChatToChats(chat));
       });
   }, [chatsData, props.chatbar_id]);
-  console.log(chats);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -88,6 +88,7 @@ function ChatPage(props: { chatbar_id?: number }) {
     }
   }, [isOpen]);
   async function streamAnswer(prompt: string, onChunk: (s: string) => void) {
+    setDone(false);
     const res = await fetch("/api/result", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -125,9 +126,14 @@ function ChatPage(props: { chatbar_id?: number }) {
     });
   }, [chats, props.chatbar_id && props.chatbar_id]);
   const handleChatSubmit = async (text: string) => {
+    if (chats.length > 0) {
+      const last = chats[chats.length - 1];
+      setLastChat(last);
+    }
     const chat: Chat = {
       email,
       text,
+      role: lastChat && lastChat.role === "user" ? "assistant" : "user",
     };
     dispatch(addChatToChats(chat));
     setText("");

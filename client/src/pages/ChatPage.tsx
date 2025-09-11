@@ -23,6 +23,7 @@ function ChatPage(props: { chatbar_id?: number }) {
   const navigate = useNavigate();
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
+  const [prompt, setPrompt] = useState("");
   const [session, setSession] = useState<Session | null>(null);
   const [done, setDone] = useState(false);
   useEffect(() => {
@@ -110,6 +111,7 @@ function ChatPage(props: { chatbar_id?: number }) {
     });
   }, [chats, props.chatbar_id && props.chatbar_id]);
   const handleChatSubmit = async (text: string) => {
+    setPrompt(text);
     setText("");
     createChat({
       text,
@@ -137,7 +139,7 @@ function ChatPage(props: { chatbar_id?: number }) {
           </div>
         ) : (
           <div className="flex justify-start">
-            <AnswerPrompt answer={text} />
+            <AnswerPrompt answer={chat.text} />
           </div>
         )}
       </div>
@@ -166,6 +168,20 @@ function ChatPage(props: { chatbar_id?: number }) {
               className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
             >
               {renderChatSections}
+              {chats && chats?.length > 0 && (
+                <>
+                  {prompt !== "" && (
+                    <div className="flex justify-end">
+                      <PromptSection prompt={prompt} />
+                    </div>
+                  )}
+                  {text !== "" && (
+                    <div className="flex justify-start">
+                      <AnswerPrompt answer={text} />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
             <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
               <div

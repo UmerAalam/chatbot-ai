@@ -13,14 +13,10 @@ import { supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
 import { useChatCreate, useChatsByChatBarID } from "src/query/chats";
-import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
-import { addChatToChats, Chat } from "src/app/slices/chatSlice";
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
   const email = localStorage.getItem("email") || "";
-  const { data: chatsData } = useChatsByChatBarID(chatbar_id.toString());
-  const dispatch = useAppDispatch();
-  const chats = useAppSelector((state) => state.chats);
+  const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
   const { mutate: createChat } = useChatCreate();
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -29,7 +25,6 @@ function ChatPage(props: { chatbar_id?: number }) {
   const [text, setText] = useState("");
   const [session, setSession] = useState<Session | null>(null);
   const [done, setDone] = useState(false);
-  const [lastChat, setLastChat] = useState<Chat | null>(null);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -44,17 +39,6 @@ function ChatPage(props: { chatbar_id?: number }) {
     }
     return () => subscription.unsubscribe();
   }, []);
-  useEffect(() => {
-    chatsData
-      ?.sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return dateA - dateB;
-      })
-      .map((chat) => {
-        dispatch(addChatToChats(chat));
-      });
-  }, [chatsData, props.chatbar_id]);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -126,16 +110,6 @@ function ChatPage(props: { chatbar_id?: number }) {
     });
   }, [chats, props.chatbar_id && props.chatbar_id]);
   const handleChatSubmit = async (text: string) => {
-    if (chats.length > 0) {
-      const last = chats[chats.length - 1];
-      setLastChat(last);
-    }
-    const chat: Chat = {
-      email,
-      text,
-      role: lastChat && lastChat.role === "user" ? "assistant" : "user",
-    };
-    dispatch(addChatToChats(chat));
     setText("");
     createChat({
       text,
@@ -163,7 +137,7 @@ function ChatPage(props: { chatbar_id?: number }) {
           </div>
         ) : (
           <div className="flex justify-start">
-            <AnswerPrompt answer={chat.text} />
+            <AnswerPrompt answer={text} />
           </div>
         )}
       </div>

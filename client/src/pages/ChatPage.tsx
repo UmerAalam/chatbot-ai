@@ -30,6 +30,7 @@ function ChatPage(props: { chatbar_id?: number }) {
   const [showAnswer, setShowAnswer] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [answer, setAnswer] = useState("");
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -44,7 +45,6 @@ function ChatPage(props: { chatbar_id?: number }) {
     }
     return () => subscription.unsubscribe();
   }, []);
-
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -113,7 +113,7 @@ function ChatPage(props: { chatbar_id?: number }) {
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateA - dateB;
     });
-  }, [chats]);
+  }, [chats, props.chatbar_id && props.chatbar_id]);
   const handleChatSubmit = async (prompt: string) => {
     setText("");
     createChat({

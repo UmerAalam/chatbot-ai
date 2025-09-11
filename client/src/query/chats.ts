@@ -89,7 +89,7 @@ const userChatsByChatBarChatID = (chatbar_id: string) => {
       const data = await res.json();
       return data.data as Chat[];
     },
-    queryKey: ["chats"],
+    queryKey: ["chats", chatbar_id],
     enabled: !!chatbar_id,
   });
 };

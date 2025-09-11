@@ -43,6 +43,7 @@ const Avatar = () => {
   }, [showDropdown]);
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    navigate({ to: "/" });
   };
   return (
     <div
@@ -70,7 +71,7 @@ const Avatar = () => {
         </div>
       ) : (
         <img
-          src={avatar}
+          src={avatar === "" ? undefined : avatar}
           alt="Avatar"
           onError={() => setShowCustomAvatar(true)}
           className="rounded-full"

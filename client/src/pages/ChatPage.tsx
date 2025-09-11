@@ -17,7 +17,7 @@ function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
   const email = localStorage.getItem("email") || "";
   const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
-  const { mutate: createChat } = useChatCreate();
+  const createChat = useChatCreate();
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
@@ -113,20 +113,22 @@ function ChatPage(props: { chatbar_id?: number }) {
   const handleChatSubmit = async (text: string) => {
     setPrompt(text);
     setText("");
-    createChat({
+    await createChat({
       text,
       chatbar_id,
       email,
       role: "user",
     });
+    setPrompt("");
     streamAnswer(text, (chunk) => setText((prev) => prev + chunk));
     if (done === true) {
-      createChat({
+      await createChat({
         text,
         chatbar_id,
         email,
         role: "assistant",
       });
+      setText("");
     }
   };
   const renderChatSections = items.map((chat, index) => {

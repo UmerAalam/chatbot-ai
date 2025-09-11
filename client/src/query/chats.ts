@@ -20,7 +20,7 @@ interface RenameChat {
 }
 export const useChatCreate = () => {
   const queryClient = useQueryClient();
-  const mutation = useMutation({
+  const { mutateAsync } = useMutation({
     mutationFn: async (chat: Chat) => {
       const res = await client.api.chats.$post({
         json: {
@@ -30,16 +30,14 @@ export const useChatCreate = () => {
           role: chat.role,
         },
       });
-      if (!res.ok) {
-        throw new Error("Error while posting chat");
-      }
+      if (!res.ok) throw new Error("Error while posting chat");
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["chats"] });
     },
   });
-  return mutation;
+  return mutateAsync;
 };
 export const useChatDelete = () => {
   const queryClient = useQueryClient();

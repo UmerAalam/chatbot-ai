@@ -12,11 +12,12 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
-import { useChatCreate, useChatsByChatBarID } from "src/query/chats";
+import { Chat, useChatCreate, useChatsByChatBarID } from "src/query/chats";
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
   const email = localStorage.getItem("email") || "";
   const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
+  const [localChats, setLocalChats] = useState<Chat[]>([]);
   const createChat = useChatCreate();
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -71,10 +72,10 @@ function ChatPage(props: { chatbar_id?: number }) {
       );
     }
   }, [isOpen]);
-  async function streamAnswer(
+  const streamAnswer = async (
     prompt: string,
     onChunk: (s: string) => void,
-  ): Promise<string> {
+  ): Promise<string> => {
     let final = "";
     const res = await fetch("/api/result", {
       method: "POST",
@@ -93,7 +94,7 @@ function ChatPage(props: { chatbar_id?: number }) {
       onChunk(chunk);
     }
     return final;
-  }
+  };
   const handleChatPanel = () => {
     const tl = tlRef.current!;
     if (!isOpen) {
@@ -111,11 +112,26 @@ function ChatPage(props: { chatbar_id?: number }) {
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateA - dateB;
     });
-  }, [chats, props.chatbar_id]);
+  }, [props.chatbar_id]);
   const handleChatSubmit = async (text: string) => {
     const userText = text.trim();
     if (!userText) return;
     setPrompt(userText);
+    if (localChats.length === 0) {
+      const last = items[items.length - 1];
+      const role = last.role === "user" ? "assistant" : "user";
+      setLocalChats((prev) => [
+        ...prev,
+        { text: userText, chatbar_id, email, role },
+      ]);
+    } else {
+      const last = localChats[localChats.length - 1];
+      const role = last.role === "user" ? "assistant" : "user";
+      setLocalChats((prev) => [
+        ...prev,
+        { text: userText, chatbar_id, email, role },
+      ]);
+    }
     setText("");
     await createChat({ text: userText, chatbar_id, email, role: "user" });
     setPrompt("");
@@ -126,6 +142,23 @@ function ChatPage(props: { chatbar_id?: number }) {
     setText("");
   };
   const renderChatSections = items.map((chat) => {
+    const isPrompt = chat.role === "user";
+    const key = chat.id ?? `${chat.created_at}-${chat.role}`;
+    return (
+      <div key={key} className="flex flex-col gap-2 w-auto h-auto">
+        {isPrompt ? (
+          <div className="flex justify-end">
+            <PromptSection prompt={chat.text} />
+          </div>
+        ) : (
+          <div className="flex justify-start">
+            <AnswerPrompt answer={chat.text} />
+          </div>
+        )}
+      </div>
+    );
+  });
+  const localChat = localChats.map((chat) => {
     const isPrompt = chat.role === "user";
     const key = chat.id ?? `${chat.created_at}-${chat.role}`;
     return (
@@ -165,16 +198,7 @@ function ChatPage(props: { chatbar_id?: number }) {
               className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
             >
               {renderChatSections}
-              {prompt !== "" && (
-                <div className="flex justify-end">
-                  <PromptSection prompt={prompt} />
-                </div>
-              )}
-              {text !== "" && (
-                <div className="flex justify-start">
-                  <AnswerPrompt answer={text} />
-                </div>
-              )}
+              {localChat}
             </div>
             <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
               <div

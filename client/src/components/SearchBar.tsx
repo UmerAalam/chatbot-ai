@@ -44,7 +44,7 @@ function SearchBar({ searchBtn, ...rest }: Props) {
         className={`w-[40%] ${multiLine ? "h-auto min-h-12" : "h-12"} rounded-2xl bg-gray-700/20 backdrop-blur-sm border-2 border-transparent hover:border-white/20`}
       >
         <div
-          className={`flex flex-row w-full text-white font-bold justify-center ${
+          className={`flex flex-row relative max-w-full text-white font-bold justify-center ${
             multiLine ? "items-end mb-2" : "min-h-8 items-center h-full"
           } gap-3`}
         >

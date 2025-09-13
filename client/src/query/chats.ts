@@ -75,12 +75,11 @@ export const useChatRename = () => {
   });
   return mutation;
 };
+
 const userChatsByChatBarChatID = (chatbar_id: string) => {
   return queryOptions({
     queryFn: async () => {
-      const res = await client.api.chats.$get({
-        query: { chatbar_id },
-      });
+      const res = await client.api.chats.$get({ query: { chatbar_id } });
       if (!res.ok) {
         throw new Error("Error Getting Folders");
       }

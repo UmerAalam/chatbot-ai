@@ -25,7 +25,6 @@ function ChatPage(props: { chatbar_id?: number }) {
   const [text, setText] = useState("");
   const [prompt, setPrompt] = useState("");
   const [session, setSession] = useState<Session | null>(null);
-  const [done, setDone] = useState(false);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -72,8 +71,11 @@ function ChatPage(props: { chatbar_id?: number }) {
       );
     }
   }, [isOpen]);
-  async function streamAnswer(prompt: string, onChunk: (s: string) => void) {
-    setDone(false);
+  async function streamAnswer(
+    prompt: string,
+    onChunk: (s: string) => void,
+  ): Promise<string> {
+    let final = "";
     const res = await fetch("/api/result", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -85,12 +87,12 @@ function ChatPage(props: { chatbar_id?: number }) {
     const decoder = new TextDecoder();
     while (true) {
       const { value, done } = await reader.read();
-      if (done) {
-        setDone(true);
-        break;
-      }
-      onChunk(decoder.decode(value, { stream: true }));
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      final += chunk;
+      onChunk(chunk);
     }
+    return final;
   }
   const handleChatPanel = () => {
     const tl = tlRef.current!;
@@ -109,32 +111,25 @@ function ChatPage(props: { chatbar_id?: number }) {
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateA - dateB;
     });
-  }, [chats, props.chatbar_id && props.chatbar_id]);
+  }, [chats, props.chatbar_id]);
   const handleChatSubmit = async (text: string) => {
-    setPrompt(text);
+    const userText = text.trim();
+    if (!userText) return;
+    setPrompt(userText);
     setText("");
-    await createChat({
-      text,
-      chatbar_id,
-      email,
-      role: "user",
-    });
+    await createChat({ text: userText, chatbar_id, email, role: "user" });
     setPrompt("");
-    streamAnswer(text, (chunk) => setText((prev) => prev + chunk));
-    if (done === true) {
-      await createChat({
-        text,
-        chatbar_id,
-        email,
-        role: "assistant",
-      });
-      setText("");
-    }
+    const final = await streamAnswer(userText, (chunk) =>
+      setText((prev) => prev + chunk),
+    );
+    await createChat({ text: final, chatbar_id, email, role: "assistant" });
+    setText("");
   };
-  const renderChatSections = items.map((chat, index) => {
+  const renderChatSections = items.map((chat) => {
     const isPrompt = chat.role === "user";
+    const key = chat.id ?? `${chat.created_at}-${chat.role}`;
     return (
-      <div key={index} className="flex flex-col gap-2 w-auto h-auto">
+      <div key={key} className="flex flex-col gap-2 w-auto h-auto">
         {isPrompt ? (
           <div className="flex justify-end">
             <PromptSection prompt={chat.text} />
@@ -150,12 +145,12 @@ function ChatPage(props: { chatbar_id?: number }) {
   return (
     <>
       <div className="flex">
-        <div id="side-panel" className="flex bg-black w-4/10">
+        <div id="side-panel" className="flex bg-black w-2/5">
           <aside
             ref={panelRef}
             id="chat-panel"
             aria-hidden={!isOpen}
-            className="relative left-0 top-0 w-full pointer-events-auto"
+            className="fixed left-0 top-0 w-full pointer-events-auto"
           >
             <ChatsBar handleBtn={handleChatPanel} />
           </aside>
@@ -170,19 +165,15 @@ function ChatPage(props: { chatbar_id?: number }) {
               className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
             >
               {renderChatSections}
-              {chats && chats?.length > 0 && (
-                <>
-                  {prompt !== "" && (
-                    <div className="flex justify-end">
-                      <PromptSection prompt={prompt} />
-                    </div>
-                  )}
-                  {text !== "" && (
-                    <div className="flex justify-start">
-                      <AnswerPrompt answer={text} />
-                    </div>
-                  )}
-                </>
+              {prompt !== "" && (
+                <div className="flex justify-end">
+                  <PromptSection prompt={prompt} />
+                </div>
+              )}
+              {text !== "" && (
+                <div className="flex justify-start">
+                  <AnswerPrompt answer={text} />
+                </div>
               )}
             </div>
             <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
@@ -198,7 +189,7 @@ function ChatPage(props: { chatbar_id?: number }) {
             <Button
               onClick={handleChatPanel}
               id="arrow-Btn"
-              className="absolute top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl"
+              className="fixed top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl"
             >
               <FaArrowRight className="text-white/80" />
             </Button>

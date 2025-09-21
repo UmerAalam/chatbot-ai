@@ -226,6 +226,11 @@ function ChatPage(props: { chatbar_id?: number }) {
             >
               {renderChatSections}
               {localChat}
+              {text !== "" && (
+                <div className="flex justify-start">
+                  <AnswerPrompt answer={text} />
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-5 justify-center items-center w-full h-full">
               <div

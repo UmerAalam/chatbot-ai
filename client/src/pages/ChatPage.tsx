@@ -12,12 +12,12 @@ import { Session, User } from "@supabase/supabase-js";
 import { getUser, supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
-import { useChatCreate, useChatsByChatBarID } from "src/query/chats";
+import { Chat, useChatCreate, useChatsByChatBarID } from "src/query/chats";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addChatToChats, getChats } from "src/app/slices/chatSlice";
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
-  const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
+  const { data: chats, isLoading } = useChatsByChatBarID(chatbar_id.toString());
   const localChats = useAppSelector(getChats);
   const dispatch = useAppDispatch();
   const createChat = useChatCreate();
@@ -29,6 +29,18 @@ function ChatPage(props: { chatbar_id?: number }) {
   const [prompt, setPrompt] = useState("");
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [initialChats, setInitialChats] = useState<Chat[]>([]);
+
+  useEffect(() => {
+    if (chats && initialChats.length === 0) {
+      const sorted = [...chats].sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateA - dateB;
+      });
+      setInitialChats(sorted);
+    }
+  }, [chats, initialChats.length]);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -115,13 +127,13 @@ function ChatPage(props: { chatbar_id?: number }) {
     }
   };
   const items = useMemo(() => {
-    if (!chats) return [];
-    return [...chats].sort((a, b) => {
+    if (!initialChats) return [];
+    return [...initialChats].sort((a, b) => {
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateA - dateB;
     });
-  }, [props.chatbar_id, chats]);
+  }, [props.chatbar_id, initialChats]);
   const handleChatSubmit = async (text: string) => {
     const userText = text.trim();
     if (!userText) return;
@@ -149,6 +161,7 @@ function ChatPage(props: { chatbar_id?: number }) {
         }),
       );
     }
+    //Add AnswerPrompt
     setText("");
     await createChat({
       text: userText,
@@ -160,13 +173,21 @@ function ChatPage(props: { chatbar_id?: number }) {
     const final = await streamAnswer(userText, (chunk) =>
       setText((prev) => prev + chunk),
     );
+    dispatch(
+      addChatToChats({
+        text: final,
+        chatbar_id,
+        email: user?.email || "",
+        role: "assistant",
+      }),
+    );
+    setText("");
     await createChat({
       text: final,
       chatbar_id,
       email: user?.email,
       role: "assistant",
     });
-    setText("");
   };
   const renderChatSections = items.map((chat) => {
     const isPrompt = chat.role === "user";

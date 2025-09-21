@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import aiIcon from "../../public/icons8-ai.svg";
 import { FaArrowRight } from "react-icons/fa";
 import { useLayoutEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
@@ -49,7 +48,7 @@ function SearchBar({ searchBtn, ...rest }: Props) {
           } gap-3`}
         >
           <img
-            src={aiIcon}
+            src="/icons8-ai.svg"
             alt="AI"
             className="relative left-0 size-6 opacity-80"
           />

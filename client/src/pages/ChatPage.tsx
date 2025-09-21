@@ -12,11 +12,14 @@ import { Session, User } from "@supabase/supabase-js";
 import { getUser, supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
-import { Chat, useChatCreate, useChatsByChatBarID } from "src/query/chats";
+import { useChatCreate, useChatsByChatBarID } from "src/query/chats";
+import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
+import { addChatToChats, getChats } from "src/app/slices/chatSlice";
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
   const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
-  const [localChats, setLocalChats] = useState<Chat[]>([]);
+  const localChats = useAppSelector(getChats);
+  const dispatch = useAppDispatch();
   const createChat = useChatCreate();
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -126,17 +129,25 @@ function ChatPage(props: { chatbar_id?: number }) {
     if (localChats.length === 0) {
       const last = items[items.length - 1];
       const role = last.role === "user" ? "assistant" : "user";
-      setLocalChats((prev) => [
-        ...prev,
-        { text: userText, chatbar_id, email: user?.email, role },
-      ]);
+      dispatch(
+        addChatToChats({
+          text: userText,
+          chatbar_id,
+          email: user?.email || "",
+          role,
+        }),
+      );
     } else {
       const last = localChats[localChats.length - 1];
       const role = last.role === "user" ? "assistant" : "user";
-      setLocalChats((prev) => [
-        ...prev,
-        { text: userText, chatbar_id, email: user?.email, role },
-      ]);
+      dispatch(
+        addChatToChats({
+          text: userText,
+          chatbar_id,
+          email: user?.email || "",
+          role,
+        }),
+      );
     }
     setText("");
     await createChat({

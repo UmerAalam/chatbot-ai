@@ -17,13 +17,6 @@ export const chatsSlice = createSlice({
     addChatToChats: (state, action: PayloadAction<Chat>) => {
       state.push(action.payload);
     },
-    addAnswerToChatAt: (
-      state,
-      action: PayloadAction<{ index: number; answer: string }>,
-    ) => {
-      const { index, answer } = action.payload;
-      if (state[index]) state[index].text = answer;
-    },
   },
 });
 

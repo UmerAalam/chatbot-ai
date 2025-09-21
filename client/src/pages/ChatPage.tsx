@@ -17,7 +17,7 @@ import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addChatToChats, getChats } from "src/app/slices/chatSlice";
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
-  const { data: chats, isLoading } = useChatsByChatBarID(chatbar_id.toString());
+  const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
   const localChats = useAppSelector(getChats);
   const dispatch = useAppDispatch();
   const createChat = useChatCreate();

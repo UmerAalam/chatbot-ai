@@ -8,10 +8,8 @@ import { createClient } from "@supabase/supabase-js";
 import { folderRoute } from "./modules/folder/folder.route";
 import { chatbarRoute } from "./modules/chatbar/chatbarRoute";
 import { chatRoute } from "./modules/chats/chat.route";
-
 const supabaseUrl = process.env.SUPABASE_URL || "";
 const supabaseKey = process.env.SUPABASE_API_KEY || "";
-
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = new Hono()

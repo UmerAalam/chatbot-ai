@@ -25,7 +25,7 @@ const AddAlert = ({ addBtn, cancelBtn, isChat = false }: Props) => {
     }
   };
   return (
-    <div className="absolute z-10 top-0 left-0 bg-black/50 w-full h-screen flex items-center justify-center backdrop-blur-2xl">
+    <div className="absolute z-10 top-0 left-0 bg-black/50 w-full h-screen flex items-center justify-center backdrop-blur-sm">
       <div className="flex flex-col gap-5 items-center justify-center bg-gray-800/20 border-2 border-transparent hover:border-gray-500/50 w-100 h-50 rounded-2xl">
         <div className="flex border-l-10 h-12 border-green-400 items-center justify-start text-white font-bold bg-gray-800/20 rounded-2xl w-[80%]">
           <div className="ml-3">{isChat ? "Chat" : "Folder"}</div>

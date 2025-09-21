@@ -8,14 +8,13 @@ import SearchBar from "src/components/SearchBar";
 import ChatsBar from "src/components/ChatsBar";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { Session } from "@supabase/supabase-js";
-import { supabase } from "src/supabase-client/supabase-client";
+import { Session, User } from "@supabase/supabase-js";
+import { getUser, supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
 import { Chat, useChatCreate, useChatsByChatBarID } from "src/query/chats";
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
-  const email = localStorage.getItem("email") || "";
   const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
   const [localChats, setLocalChats] = useState<Chat[]>([]);
   const createChat = useChatCreate();
@@ -26,6 +25,7 @@ function ChatPage(props: { chatbar_id?: number }) {
   const [text, setText] = useState("");
   const [prompt, setPrompt] = useState("");
   const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -39,6 +39,13 @@ function ChatPage(props: { chatbar_id?: number }) {
       navigate({ to: "/" });
     }
     return () => subscription.unsubscribe();
+  }, []);
+  useEffect(() => {
+    const userSetup = async () => {
+      const user = await getUser();
+      setUser(user);
+    };
+    userSetup();
   }, []);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
@@ -83,7 +90,6 @@ function ChatPage(props: { chatbar_id?: number }) {
       body: JSON.stringify({ prompt }),
     });
     if (!res.body) throw new Error("No body");
-
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     while (true) {
@@ -122,23 +128,33 @@ function ChatPage(props: { chatbar_id?: number }) {
       const role = last.role === "user" ? "assistant" : "user";
       setLocalChats((prev) => [
         ...prev,
-        { text: userText, chatbar_id, email, role },
+        { text: userText, chatbar_id, email: user?.email, role },
       ]);
     } else {
       const last = localChats[localChats.length - 1];
       const role = last.role === "user" ? "assistant" : "user";
       setLocalChats((prev) => [
         ...prev,
-        { text: userText, chatbar_id, email, role },
+        { text: userText, chatbar_id, email: user?.email, role },
       ]);
     }
     setText("");
-    await createChat({ text: userText, chatbar_id, email, role: "user" });
+    await createChat({
+      text: userText,
+      chatbar_id,
+      email: user?.email,
+      role: "user",
+    });
     setPrompt("");
     const final = await streamAnswer(userText, (chunk) =>
       setText((prev) => prev + chunk),
     );
-    await createChat({ text: final, chatbar_id, email, role: "assistant" });
+    await createChat({
+      text: final,
+      chatbar_id,
+      email: user?.email,
+      role: "assistant",
+    });
     setText("");
   };
   const renderChatSections = items.map((chat) => {

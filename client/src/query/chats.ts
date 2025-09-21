@@ -4,14 +4,16 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { client } from "src/lib/client";
+import { getUser } from "src/supabase-client/supabase-client";
 
 export interface Chat {
   id?: number;
   text: string;
   chatbar_id: number;
   created_at?: string;
-  email: string;
+  email?: string;
   role: string;
 }
 interface RenameChat {
@@ -20,14 +22,19 @@ interface RenameChat {
 }
 export const useChatCreate = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { mutateAsync } = useMutation({
     mutationFn: async (chat: Chat) => {
+      const user = await getUser();
+      if (!user) {
+        return navigate({ to: "/" });
+      }
       const res = await client.api.chats.$post({
         json: {
           chatbar_id: chat.chatbar_id,
           text: chat.text,
-          email: chat.email,
           role: chat.role,
+          email: (user && user.email) || "",
         },
       });
       if (!res.ok) throw new Error("Error while posting chat");

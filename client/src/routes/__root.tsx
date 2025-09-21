@@ -3,7 +3,7 @@ import { Provider } from "react-redux";
 import { store } from "../app/store/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const queryClient = new QueryClient();
-
+import appCss from "../styles.css?url";
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -21,7 +21,7 @@ export const Route = createRootRoute({
     links: [
       {
         rel: "stylesheet",
-        href: "../styles.css",
+        href: appCss,
       },
     ],
   }),

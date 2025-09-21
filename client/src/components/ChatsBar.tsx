@@ -1,6 +1,6 @@
 import ChatBarSearch from "./ChatBarSearch";
 import { IoMdAdd } from "react-icons/io";
-import { HTMLAttributes, useState } from "react";
+import { HTMLAttributes, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowLeft } from "react-icons/fa";
 import AddAlert from "./AddAlert";
@@ -9,11 +9,12 @@ import { useChatBarChatCreate } from "src/query/chatbarchat";
 import { useFolderCreate } from "src/query/folder";
 import ChatBarChatList from "./ChatBarChatList";
 import FoldersList from "./FoldersList";
+import { User } from "@supabase/supabase-js";
+import { getUser } from "src/supabase-client/supabase-client";
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
 }
 function ChatsBar({ handleBtn, ...rest }: Props) {
-  const email = localStorage.getItem("email") || "";
   const [searchTerm, setSearchTerm] = useState("");
   const { mutate: createChat } = useChatBarChatCreate();
   const { mutate: createFolder } = useFolderCreate();
@@ -22,11 +23,19 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [showChatFolder, setShowChatFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [folderId, setFolderId] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  useEffect(() => {
+    const userSetup = async () => {
+      const user = await getUser();
+      setUser(user);
+    };
+    userSetup();
+  }, []);
   const handleChatSubmit = (text: string) => {
     createChat({
       chat_name: text,
       folder_id: "DEFAULT",
-      email,
+      email: user?.email || "",
     });
     setShowChatAlert(false);
   };
@@ -35,13 +44,13 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
       createChat({
         chat_name: props.text,
         folder_id: folderId,
-        email,
+        email: user?.email || "",
       });
     setShowChatAlert(false);
   };
   const handleFolderSubmit = (name: string) => {
     createFolder({
-      email,
+      email: user?.email || "",
       folder_name: name,
     });
     setShowFolderAlert(false);

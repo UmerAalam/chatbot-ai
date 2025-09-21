@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, User } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
@@ -18,7 +18,7 @@ const getUser = async () => {
     console.error("Error getting user:", error.message);
     return null;
   }
-  return data.user;
+  return data.user as User;
 };
 
 const setUser = async () => {

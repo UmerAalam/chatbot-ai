@@ -1,17 +1,24 @@
 import { useUserChatBarChats } from "src/query/chatbarchat";
 import ChatShortcut from "./ChatShortcut";
 import { useEffect, useMemo, useState } from "react";
+import { User } from "@supabase/supabase-js";
+import { getUser } from "src/supabase-client/supabase-client";
 
 interface Props {
   searchTerm: string;
 }
 const ChatBarChatList = ({ searchTerm }: Props) => {
-  const [email, setEmail] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const { data: chatbarchats, isLoading } = useUserChatBarChats(
+    user?.email || "",
+  );
   useEffect(() => {
-    const Email = localStorage.getItem("email") || "";
-    setEmail(Email);
+    const userSetup = async () => {
+      const user = await getUser();
+      setUser(user);
+    };
+    userSetup();
   }, []);
-  const { data: chatbarchats, isLoading } = useUserChatBarChats(email);
   const items = useMemo(() => {
     if (!chatbarchats) return [];
     const list = searchTerm.trim()

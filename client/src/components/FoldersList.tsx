@@ -1,6 +1,8 @@
 import { useFolders } from "src/query/folder";
 import ChatFolder from "./ChatFolder";
 import { useEffect, useMemo, useState } from "react";
+import { getUser } from "src/supabase-client/supabase-client";
+import { User } from "@supabase/supabase-js";
 
 interface FolderProps {
   name: string;
@@ -11,12 +13,17 @@ interface Props {
   showChatFolder: ({ name, folder_id }: FolderProps) => void;
 }
 const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
-  const [email, setEmail] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const { data: folders, isLoading: folderLoading } = useFolders(
+    user?.email || "",
+  );
   useEffect(() => {
-    const Email = localStorage.getItem("email") || "";
-    setEmail(Email);
+    const userSetup = async () => {
+      const user = await getUser();
+      setUser(user);
+    };
+    userSetup();
   }, []);
-  const { data: folders, isLoading: folderLoading } = useFolders(email);
   const items = useMemo(() => {
     if (!folders) return [];
     const list = searchTerm.trim()

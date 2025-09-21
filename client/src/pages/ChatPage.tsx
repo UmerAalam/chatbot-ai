@@ -118,7 +118,7 @@ function ChatPage(props: { chatbar_id?: number }) {
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateA - dateB;
     });
-  }, [props.chatbar_id]);
+  }, [props.chatbar_id, chats]);
   const handleChatSubmit = async (text: string) => {
     const userText = text.trim();
     if (!userText) return;

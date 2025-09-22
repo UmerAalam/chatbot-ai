@@ -37,9 +37,8 @@ function ChatPage(props: { chatbar_id?: number }) {
         return dateA - dateB;
       });
       setInitialChats(sorted);
-      dispatch(clearChats());
     }
-  }, [chats, chatbar_id, dispatch]);
+  }, [chats, chatbar_id, props.chatbar_id, dispatch]);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -192,10 +191,7 @@ function ChatPage(props: { chatbar_id?: number }) {
       </div>
     );
   });
-  const chatItems = useMemo(() => {
-    return localChats;
-  }, [props.chatbar_id]);
-  const localChat = chatItems.map((chat) => {
+  const localChat = localChats.map((chat) => {
     const isPrompt = chat.role === "user";
     const key = chat.id ?? `${chat.created_at}-${chat.role}`;
     return (

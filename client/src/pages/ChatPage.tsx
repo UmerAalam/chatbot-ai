@@ -36,6 +36,7 @@ function ChatPage(props: { chatbar_id?: number }) {
         const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
         return dateA - dateB;
       });
+      dispatch(clearChats());
       setInitialChats(sorted);
     }
   }, [chats, chatbar_id, props.chatbar_id, dispatch]);

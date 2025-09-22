@@ -16,10 +16,6 @@ export interface Chat {
   email?: string;
   role: string;
 }
-interface RenameChat {
-  id: number;
-  text: string;
-}
 export const useChatCreate = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -64,24 +60,6 @@ export const useChatDelete = () => {
   });
   return mutation;
 };
-export const useChatRename = () => {
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: async (chat: RenameChat) => {
-      const res = await client.api.chats.$patch({
-        json: chat,
-      });
-      if (!res.ok) {
-        throw new Error("Error while renaming chat");
-      }
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
-    },
-  });
-  return mutation;
-};
 
 const userChatsByChatBarChatID = (chatbar_id: string) => {
   return queryOptions({
@@ -91,7 +69,7 @@ const userChatsByChatBarChatID = (chatbar_id: string) => {
         throw new Error("Error Getting Folders");
       }
       const data = await res.json();
-      return data.data as Chat[];
+      return data as Chat[];
     },
     queryKey: ["chats", chatbar_id],
     enabled: !!chatbar_id,

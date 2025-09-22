@@ -1,10 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import db from "../../db";
-import { chatbarchatsTable } from "../../db/schema";
+import { chatbarchatsTable, chatsTable } from "../../db/schema";
 import { ChatBarChat } from "./chatbar.dto";
 
 export const AddChatBarChat = async (chatbarchat: ChatBarChat) => {
-  console.log(chatbarchat);
   const res = await db
     .insert(chatbarchatsTable)
     .values({
@@ -15,10 +14,10 @@ export const AddChatBarChat = async (chatbarchat: ChatBarChat) => {
     .returning();
   return res;
 };
-export const DeleteChatBarChat = async (id: number) => {
+export const DeleteChatBarChat = async (chatbar_id: string) => {
   const res = await db
-    .delete(chatbarchatsTable)
-    .where(eq(chatbarchatsTable.id, id))
+    .delete(chatsTable)
+    .where(eq(chatsTable.chatbar_id, chatbar_id))
     .returning();
   return res;
 };

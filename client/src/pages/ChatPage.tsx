@@ -26,20 +26,20 @@ function ChatPage(props: { chatbar_id?: number }) {
   const navigate = useNavigate();
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
-  const [_, setPrompt] = useState("");
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
   useEffect(() => {
-    if (chats && initialChats.length === 0) {
+    if (chats) {
       const sorted = [...chats].sort((a, b) => {
         const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
         const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
         return dateA - dateB;
       });
+
       setInitialChats(sorted);
     }
-  }, [chats, initialChats.length]);
+  }, [chats, chatbar_id, dispatch]);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -125,18 +125,9 @@ function ChatPage(props: { chatbar_id?: number }) {
       setIsOpen(false);
     }
   };
-  const items = useMemo(() => {
-    if (!initialChats) return [];
-    return [...initialChats].sort((a, b) => {
-      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return dateA - dateB;
-    });
-  }, [props.chatbar_id, initialChats]);
   const handleChatSubmit = async (text: string) => {
     const userText = text.trim();
     if (!userText) return;
-    setPrompt(userText);
     let role: "user" | "assistant" = "user"; // default role
     if (localChats.length > 0) {
       const last = localChats[localChats.length - 1];
@@ -157,7 +148,6 @@ function ChatPage(props: { chatbar_id?: number }) {
       email: user?.email,
       role: "user",
     });
-    setPrompt("");
     const final = await streamAnswer(userText, (chunk) =>
       setText((prev) => prev + chunk),
     );
@@ -177,6 +167,14 @@ function ChatPage(props: { chatbar_id?: number }) {
       role: "assistant",
     });
   };
+  const items = useMemo(() => {
+    if (!initialChats) return [];
+    return [...initialChats].sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateA - dateB;
+    });
+  }, [props.chatbar_id, initialChats]);
   const renderChatSections = items.map((chat) => {
     const isPrompt = chat.role === "user";
     const key = chat.id ?? `${chat.created_at}-${chat.role}`;

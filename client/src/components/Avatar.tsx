@@ -9,6 +9,8 @@ const Avatar = () => {
   const [showCustomAvatar, setShowCustomAvatar] = useState(false);
   const [showDropdown, setShowDropDown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const [email, setEmail] = useState("");
+  const username = email.split("@")[0];
   const navigate = useNavigate();
   useEffect(() => {
     const LoadUserDetails = async () => {
@@ -16,6 +18,7 @@ const Avatar = () => {
       !userdetails && navigate({ to: "/" });
       userdetails && setUser(userdetails);
       const avatar_url = await userdetails?.user_metadata.avatar_url;
+      setEmail(userdetails!.email!);
       setAvatar(avatar_url);
     };
     LoadUserDetails();
@@ -54,6 +57,9 @@ const Avatar = () => {
           className="absolute right-0 top-10 bg-gray-800/80 backdrop-blur-2xl text-white/90 rounded-lg shadow-lg border border-gray-700/50 w-40 z-10"
         >
           <ul className="flex flex-col text-sm">
+            <li className="flex justify-start items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-lg text-gray-300 hover:text-gray-400">
+              {username}
+            </li>
             <li
               onClick={() => handleSignOut()}
               className="flex justify-start items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-lg text-red-400 hover:text-red-300"

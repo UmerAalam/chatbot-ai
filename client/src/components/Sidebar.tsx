@@ -17,7 +17,6 @@ export function Sidebar({
 }: SidebarProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Close on ESC
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -27,7 +26,6 @@ export function Sidebar({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  // Scroll lock when open
   useEffect(() => {
     if (!open) return;
     const { overflow } = document.body.style;
@@ -37,21 +35,18 @@ export function Sidebar({
     };
   }, [open]);
 
-  // Click outside to close
   useEffect(() => {
     if (!open) return;
     const onClick = (e: MouseEvent) => {
       if (!panelRef.current) return;
       if (!panelRef.current.contains(e.target as Node)) onClose();
     };
-    // use capture so it runs before inner handlers
     document.addEventListener("mousedown", onClick, true);
     return () => document.removeEventListener("mousedown", onClick, true);
   }, [open, onClose]);
 
   return (
     <>
-      {/* Backdrop */}
       <div
         aria-hidden
         className={[
@@ -61,8 +56,6 @@ export function Sidebar({
             : "opacity-0 pointer-events-none",
         ].join(" ")}
       />
-
-      {/* Panel */}
       <aside
         ref={panelRef}
         role="complementary"
@@ -75,7 +68,6 @@ export function Sidebar({
         ].join(" ")}
         style={{ width }}
       >
-        {/* Sticky header (optional) */}
         <div className="sticky top-0 z-10 flex items-center gap-2 px-3 h-12 border-b border-white/10 bg-neutral-900/80 backdrop-blur">
           <button
             onClick={onClose}
@@ -98,8 +90,6 @@ export function Sidebar({
           </button>
           <span className="text-sm text-white/70">Chats</span>
         </div>
-
-        {/* Content area */}
         <div className="overflow-y-auto h-[calc(100dvh-3rem)]">{children}</div>
       </aside>
     </>

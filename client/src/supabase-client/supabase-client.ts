@@ -18,6 +18,7 @@ const getUser = async () => {
     console.error("Error getting user:", error.message);
     return null;
   }
+  localStorage.setItem("email", data.user.email!);
   return data.user as User;
 };
 

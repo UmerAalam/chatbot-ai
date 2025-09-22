@@ -76,7 +76,7 @@ const userChatsByFolderID = (folder_id: string) => {
         throw new Error("Error Getting ChatBarChats");
       }
       const data = await res.json();
-      return data.data as ChatBarChat[];
+      return data as ChatBarChat[];
     },
     queryKey: ["chatbarchats", folder_id],
     enabled: !!folder_id,
@@ -96,7 +96,7 @@ const userChatBarChats = (email: string) => {
         throw new Error("Error Getting ChatBarChats");
       }
       const data = await res.json();
-      return data.data as ChatBarChat[];
+      return data as ChatBarChat[];
     },
     queryKey: ["chatbarchats"],
     enabled: !!email,

@@ -14,7 +14,7 @@ import Avatar from "src/components/Avatar";
 import { useNavigate } from "@tanstack/react-router";
 import { Chat, useChatCreate, useChatsByChatBarID } from "src/query/chats";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
-import { addChatToChats, getChats } from "src/app/slices/chatSlice";
+import { addChatToChats, clearChats, getChats } from "src/app/slices/chatSlice";
 function ChatPage(props: { chatbar_id?: number }) {
   const chatbar_id = props.chatbar_id || 0;
   const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
@@ -36,8 +36,8 @@ function ChatPage(props: { chatbar_id?: number }) {
         const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
         return dateA - dateB;
       });
-
       setInitialChats(sorted);
+      dispatch(clearChats());
     }
   }, [chats, chatbar_id, dispatch]);
   useEffect(() => {
@@ -192,7 +192,10 @@ function ChatPage(props: { chatbar_id?: number }) {
       </div>
     );
   });
-  const localChat = localChats.map((chat) => {
+  const chatItems = useMemo(() => {
+    return localChats;
+  }, [props.chatbar_id]);
+  const localChat = chatItems.map((chat) => {
     const isPrompt = chat.role === "user";
     const key = chat.id ?? `${chat.created_at}-${chat.role}`;
     return (

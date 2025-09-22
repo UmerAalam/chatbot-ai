@@ -11,7 +11,7 @@ import { getUser } from "src/supabase-client/supabase-client";
 export interface Chat {
   id?: number;
   text: string;
-  chatbar_id: number;
+  chatbar_id: string;
   created_at?: string;
   email?: string;
   role: string;

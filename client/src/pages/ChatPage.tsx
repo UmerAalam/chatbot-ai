@@ -26,7 +26,7 @@ function ChatPage(props: { chatbar_id?: number }) {
   const navigate = useNavigate();
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
-  const [prompt, setPrompt] = useState("");
+  const [_, setPrompt] = useState("");
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
@@ -137,34 +137,23 @@ function ChatPage(props: { chatbar_id?: number }) {
     const userText = text.trim();
     if (!userText) return;
     setPrompt(userText);
-    if (localChats.length === 0) {
-      const last = items[items.length - 1];
-      const role = last.role === "user" ? "assistant" : "user";
-      dispatch(
-        addChatToChats({
-          text: userText,
-          chatbar_id,
-          email: user?.email || "",
-          role,
-        }),
-      );
-    } else {
+    let role: "user" | "assistant" = "user"; // default role
+    if (localChats.length > 0) {
       const last = localChats[localChats.length - 1];
-      const role = last.role === "user" ? "assistant" : "user";
-      dispatch(
-        addChatToChats({
-          text: userText,
-          chatbar_id,
-          email: user?.email || "",
-          role,
-        }),
-      );
+      role = last.role === "user" ? "assistant" : "user";
     }
-    //Add AnswerPrompt
+    dispatch(
+      addChatToChats({
+        text: userText,
+        chatbar_id,
+        email: user?.email || "",
+        role,
+      }),
+    );
     setText("");
     await createChat({
       text: userText,
-      chatbar_id,
+      chatbar_id: chatbar_id.toString(),
       email: user?.email,
       role: "user",
     });
@@ -183,7 +172,7 @@ function ChatPage(props: { chatbar_id?: number }) {
     setText("");
     await createChat({
       text: final,
-      chatbar_id,
+      chatbar_id: chatbar_id.toString(),
       email: user?.email,
       role: "assistant",
     });
@@ -244,7 +233,7 @@ function ChatPage(props: { chatbar_id?: number }) {
             <div
               className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
             >
-              {renderChatSections}
+              {initialChats.length > 0 && renderChatSections}
               {localChat}
               {text !== "" && (
                 <div className="flex justify-start">

@@ -80,7 +80,7 @@ const userFoldersByEmail = (email: string) => {
         throw new Error("Error Getting Folders");
       }
       const data = await res.json();
-      return data.data as Folder[];
+      return data as Folder[];
     },
     queryKey: ["folders"],
     enabled: !!email,

@@ -8,30 +8,32 @@ import {
 } from "./folder.dto";
 import { supabase } from "../../server";
 import "dotenv/config";
+import {
+  AddFolder,
+  DeleteFolderByID,
+  RenameFolderByID,
+  UserFoldersByEmail,
+} from "./folder.service";
 
 export const folderRoute = new Hono()
   .basePath("folder")
   .post("/", zValidator("json", folderSchema), async (c) => {
     const folder = await c.req.json();
-    const res = await supabase.from("folders").insert(folder);
+    const res = await AddFolder(folder);
     return c.json(res, 200);
   })
   .delete("/", zValidator("json", deleteFolderSchema), async (c) => {
     const { id } = await c.req.json();
-    const res = await supabase.from("folders").delete().eq("id", Number(id));
+    const res = await DeleteFolderByID(id);
     return c.json(res, 200);
   })
   .patch("/", zValidator("json", renameFolderSchema), async (c) => {
-    const { id, folder_name } = c.req.valid("json");
-    const res = await supabase
-      .from("folders")
-      .update({ folder_name })
-      .eq("id", Number(id))
-      .select();
+    const renameFolder = c.req.valid("json");
+    const res = await RenameFolderByID(renameFolder);
     return c.json(res, 200);
   })
   .get("/", zValidator("query", folderEmailSchema), async (c) => {
     const email = c.req.query("email");
-    const res = await supabase.from("folders").select().eq("email", email);
+    const res = await UserFoldersByEmail(email!);
     return c.json(res, 200);
   });

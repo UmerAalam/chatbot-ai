@@ -1,7 +1,8 @@
 {
   "name": "server",
   "scripts": {
-    "server": "bun run --hot src/server.ts"
+    "server": "bun run --hot src/server.ts",
+    "build": "bun build src/server.ts --outdir dist"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.9",

@@ -13,7 +13,6 @@ interface Props {
 const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
   const [email, setEmail] = useState("");
   const { data: folders, isLoading: folderLoading } = useFolders(email);
-  console.log(folders);
   useEffect(() => {
     const stored = localStorage.getItem("email");
     if (stored) setEmail(stored);

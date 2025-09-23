@@ -7,5 +7,5 @@ export const Route = createFileRoute("/chatpage/$pageId")({
 
 function RouteComponent() {
   const pageId = useParams({ from: "/chatpage/$pageId" }).pageId;
-  return <ChatPage chatbar_id={pageId} />;
+  return <ChatPage chatbar_id={Number(pageId)} />;
 }

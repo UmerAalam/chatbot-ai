@@ -8,14 +8,13 @@ import SearchBar from "src/components/SearchBar";
 import ChatsBar from "src/components/ChatsBar";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { Session, User } from "@supabase/supabase-js";
-import { getUser, supabase } from "src/supabase-client/supabase-client";
 import Avatar from "src/components/Avatar";
-import { useNavigate } from "@tanstack/react-router";
 import { Chat, useChatCreate, useChatsByChatBarID } from "src/query/chats";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addChatToChats, clearChats, getChats } from "src/app/slices/chatSlice";
+import { useAuth } from "src/lib/FetchUser";
 function ChatPage(props: { chatbar_id?: number }) {
+  const { user } = useAuth();
   const chatbar_id = props.chatbar_id || 0;
   const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
   const localChats = useAppSelector(getChats);
@@ -23,13 +22,9 @@ function ChatPage(props: { chatbar_id?: number }) {
   const createChat = useChatCreate();
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const navigate = useNavigate();
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
-  console.log(props.chatbar_id);
   useEffect(() => {
     if (chats) {
       const sorted = [...chats].sort((a, b) => {
@@ -41,27 +36,6 @@ function ChatPage(props: { chatbar_id?: number }) {
       setInitialChats(sorted);
     }
   }, [chats, chatbar_id, props.chatbar_id, dispatch]);
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-    if (session) {
-      navigate({ to: "/" });
-    }
-    return () => subscription.unsubscribe();
-  }, []);
-  useEffect(() => {
-    const userSetup = async () => {
-      const user = await getUser();
-      setUser(user);
-    };
-    userSetup();
-  }, []);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {

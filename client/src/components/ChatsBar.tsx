@@ -1,6 +1,6 @@
 import ChatBarSearch from "./ChatBarSearch";
 import { IoMdAdd } from "react-icons/io";
-import { HTMLAttributes, useEffect, useState } from "react";
+import { HTMLAttributes, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowLeft } from "react-icons/fa";
 import AddAlert from "./AddAlert";
@@ -9,13 +9,13 @@ import { useChatBarChatCreate } from "src/query/chatbarchat";
 import { useFolderCreate } from "src/query/folder";
 import ChatBarChatList from "./ChatBarChatList";
 import FoldersList from "./FoldersList";
-import { User } from "@supabase/supabase-js";
-import { getUser } from "src/supabase-client/supabase-client";
+import { useAuth } from "src/lib/FetchUser";
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
 }
 function ChatsBar({ handleBtn, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
+  const { user } = useAuth();
   const { mutate: createChat } = useChatBarChatCreate();
   const { mutate: createFolder } = useFolderCreate();
   const [showFolderAlert, setShowFolderAlert] = useState(false);
@@ -23,14 +23,6 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [showChatFolder, setShowChatFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [folderId, setFolderId] = useState("");
-  const [user, setUser] = useState<User | null>(null);
-  useEffect(() => {
-    const userSetup = async () => {
-      const user = await getUser();
-      setUser(user);
-    };
-    userSetup();
-  }, []);
   const handleChatSubmit = (text: string) => {
     createChat({
       chat_name: text,

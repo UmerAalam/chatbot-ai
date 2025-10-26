@@ -2,10 +2,14 @@ import { FcGoogle } from "react-icons/fc";
 import { authClient } from "../lib/auth-client";
 import { useAuth } from "src/lib/FetchUser";
 import { useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 const SignUpPage = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   useEffect(() => {
-    console.log(user);
+    if (user) {
+      navigate({ to: "/chatpage" });
+    }
   }, [loading]);
   const handleGoogleSignIn = async () => {
     try {

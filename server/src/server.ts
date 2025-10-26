@@ -4,14 +4,10 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import "dotenv/config";
 import { openaiRoute } from "./modules/openAI/openaiRoute";
-import { createClient } from "@supabase/supabase-js";
 import { folderRoute } from "./modules/folder/folder.route";
 import { chatbarRoute } from "./modules/chatbar/chatbarRoute";
 import { chatRoute } from "./modules/chats/chat.route";
-const supabaseUrl = process.env.SUPABASE_URL || "";
-const supabaseKey = process.env.SUPABASE_API_KEY || "";
-export const supabase = createClient(supabaseUrl, supabaseKey);
-
+import { authRoute } from "./modules/auth/authRoute";
 const app = new Hono()
   .use(logger())
   .use(
@@ -19,9 +15,11 @@ const app = new Hono()
     cors({
       origin: "http://localhost:3000",
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      allowHeaders: ["*"],
+      allowHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
     }),
   )
+  .route("/api", authRoute)
   .route("/api", openaiRoute)
   .route("/api", chatbarRoute)
   .route("/api", folderRoute)

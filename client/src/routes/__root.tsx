@@ -2,9 +2,11 @@ import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import { Provider } from "react-redux";
 import { store } from "../app/store/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-const queryClient = new QueryClient();
+import NotFoundPage from "src/pages/NotFoundPage";
 import appCss from "../styles.css?url";
+const queryClient = new QueryClient();
 export const Route = createRootRoute({
+  notFoundComponent: NotFoundPage,
   head: () => ({
     meta: [
       {

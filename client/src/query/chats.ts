@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { client } from "src/lib/client";
-import { getUser } from "src/supabase-client/supabase-client";
 
 export interface Chat {
   id?: number;
@@ -21,7 +20,7 @@ export const useChatCreate = () => {
   const navigate = useNavigate();
   const { mutateAsync } = useMutation({
     mutationFn: async (chat: Chat) => {
-      const user = await getUser();
+      const user = await useAuth();
       if (!user) {
         return navigate({ to: "/" });
       }

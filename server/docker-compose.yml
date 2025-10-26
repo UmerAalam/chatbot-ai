@@ -1,0 +1,16 @@
+services:
+  db:
+    container_name: chatbot-ai
+    image: postgres:17
+    restart: always
+    shm_size: 512mb
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:

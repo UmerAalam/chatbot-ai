@@ -1,10 +1,10 @@
-import { User } from "@supabase/supabase-js";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { getUser, supabase } from "src/supabase-client/supabase-client";
+import { authClient } from "src/lib/auth-client";
+import { useAuth } from "src/lib/FetchUser";
 
 const Avatar = () => {
-  const [user, setUser] = useState<User>();
+  const { user, loading } = useAuth();
   const [avatar, setAvatar] = useState("");
   const [showCustomAvatar, setShowCustomAvatar] = useState(false);
   const [showDropdown, setShowDropDown] = useState(false);
@@ -14,15 +14,11 @@ const Avatar = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const LoadUserDetails = async () => {
-      const userdetails = await getUser();
-      !userdetails && navigate({ to: "/" });
-      userdetails && setUser(userdetails);
-      const avatar_url = await userdetails?.user_metadata.avatar_url;
-      setEmail(userdetails!.email!);
-      setAvatar(avatar_url);
+      setEmail(user!.email);
+      setAvatar(user!.image!);
     };
     LoadUserDetails();
-  }, []);
+  }, [loading]);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -43,7 +39,7 @@ const Avatar = () => {
     };
   }, [showDropdown]);
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await authClient.signOut();
     navigate({ to: "/" });
   };
   return (
@@ -71,7 +67,7 @@ const Avatar = () => {
       )}
       {showCustomAvatar ? (
         <div className="flex justify-center select-none items-center font-bold text-white text-xl w-full h-full bg-green-700 rounded-full">
-          {user && user?.user_metadata.full_name.slice(0, 1)}
+          {user && user?.name.slice(0, 1)}
         </div>
       ) : (
         <img

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { authClient } from "./auth-client";
-type User =
+export type User =
   | {
       id: string;
       createdAt: Date;

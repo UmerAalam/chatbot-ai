@@ -33,12 +33,12 @@ export const users = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  emailVerified: boolean("emailVerified").notNull(),
+  emailVerified: boolean("email_verified").notNull(),
   image: text("image"),
-  createdAt: timestamp("createdAt", { withTimezone: true })
+  createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true })
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
 });
@@ -46,15 +46,15 @@ export const users = pgTable("user", {
 // SESSIONS
 export const sessions = pgTable("session", {
   id: text("id").primaryKey(),
-  expiresAt: timestamp("expiresAt", { withTimezone: true }).notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   token: text("token").notNull().unique(),
-  createdAt: timestamp("createdAt", { withTimezone: true })
+  createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }).notNull(),
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  userId: text("userId")
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
 });
@@ -62,26 +62,26 @@ export const sessions = pgTable("session", {
 // ACCOUNTS
 export const accounts = pgTable("account", {
   id: text("id").primaryKey(),
-  accountId: text("accountId").notNull(),
-  providerId: text("providerId").notNull(),
-  userId: text("userId")
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  accessToken: text("accessToken"),
-  refreshToken: text("refreshToken"),
-  idToken: text("idToken"),
-  accessTokenExpiresAt: timestamp("accessTokenExpiresAt", {
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at", {
     withTimezone: true,
   }),
-  refreshTokenExpiresAt: timestamp("refreshTokenExpiresAt", {
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at", {
     withTimezone: true,
   }),
   scope: text("scope"),
   password: text("password"),
-  createdAt: timestamp("createdAt", { withTimezone: true })
+  createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
 });
 
 // VERIFICATION TOKENS
@@ -89,11 +89,11 @@ export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
-  expiresAt: timestamp("expiresAt", { withTimezone: true }).notNull(),
-  createdAt: timestamp("createdAt", { withTimezone: true })
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-  updatedAt: timestamp("updatedAt", { withTimezone: true })
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
 });

@@ -16,6 +16,7 @@ type User =
 export async function fetchSession() {
   const res = await authClient.getSession();
   const session = res.data;
+  console.log(session);
   return session?.user;
 }
 export function useAuth() {
@@ -25,6 +26,7 @@ export function useAuth() {
   useEffect(() => {
     fetchSession().then((user) => {
       if (!user) {
+        console.log("User isn't available");
         return navigate({ to: "/" });
       }
       setUser(user);

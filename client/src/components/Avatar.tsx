@@ -14,8 +14,8 @@ const Avatar = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const LoadUserDetails = async () => {
-      setEmail(user!.email);
-      setAvatar(user!.image!);
+      user && setEmail(user.email);
+      user && setAvatar(user.image!);
     };
     LoadUserDetails();
   }, [loading]);

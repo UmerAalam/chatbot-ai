@@ -1,12 +1,12 @@
 import { betterAuth } from "better-auth";
-import { Pool } from "pg";
 import "dotenv/config";
-
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import db from "../db";
 export const auth = betterAuth({
   baseURL: "http://localhost:8000",
   secret: process.env.BETTER_AUTH_SECRET!,
-  database: new Pool({
-    connectionString: process.env.DATABASE_URL!,
+  database: drizzleAdapter(db, {
+    provider: "pg",
   }),
   trustedOrigins: ["http://localhost:3000"],
   socialProviders: {

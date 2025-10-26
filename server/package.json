@@ -3,7 +3,8 @@
   "scripts": {
     "server": "bun run --hot src/server.ts",
     "build": "bun build src/server.ts --outdir dist",
-    "db:push": "bunx drizzle-kit push"
+    "db:push": "bunx drizzle-kit push",
+    "db:studio": "bunx drizzle-kit studio"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.9",

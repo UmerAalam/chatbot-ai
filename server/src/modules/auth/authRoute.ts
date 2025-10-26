@@ -11,7 +11,6 @@ authRoute.get("/auth/session", async (c) => {
   const session = await auth.api.getSession({
     headers: c.req.raw.headers,
   });
-
   if (!session) return c.json({ msg: "Not authenticated" }, 401);
 
   return c.json({ msg: "Authenticated!", user: session.user });

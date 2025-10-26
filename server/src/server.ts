@@ -8,6 +8,7 @@ import { folderRoute } from "./modules/folder/folder.route";
 import { chatbarRoute } from "./modules/chatbar/chatbarRoute";
 import { chatRoute } from "./modules/chats/chat.route";
 import { authRoute } from "./modules/auth/authRoute";
+
 const app = new Hono()
   .use(logger())
   .use(

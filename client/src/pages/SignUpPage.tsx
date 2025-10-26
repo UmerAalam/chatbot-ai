@@ -1,20 +1,12 @@
 import { FcGoogle } from "react-icons/fc";
-import { getUser, supabase } from "../supabase-client/supabase-client";
-import { useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { authClient } from "../lib/auth-client";
+import { useAuth } from "src/lib/FetchUser";
+import { useEffect } from "react";
 const SignUpPage = () => {
-  const navigate = useNavigate();
+  const { user, loading } = useAuth();
   useEffect(() => {
-    const checkUser = async () => {
-      const user = await getUser();
-      if (user) {
-        navigate({ to: "/chatpage" });
-        return null;
-      }
-    };
-    checkUser();
-  });
+    console.log(user);
+  }, [loading]);
   const handleGoogleSignIn = async () => {
     try {
       await authClient.signIn.social({ provider: "google" });

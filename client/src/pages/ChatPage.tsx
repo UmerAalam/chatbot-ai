@@ -29,6 +29,7 @@ function ChatPage(props: { chatbar_id?: number }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
+  console.log(props.chatbar_id);
   useEffect(() => {
     if (chats) {
       const sorted = [...chats].sort((a, b) => {

@@ -7,7 +7,7 @@ authRoute.all("auth/*", async (c) => {
   return auth.handler(c.req.raw);
 });
 
-authRoute.get("/auth/me", async (c) => {
+authRoute.get("/auth/session", async (c) => {
   const session = await auth.api.getSession({
     headers: c.req.raw.headers,
   });

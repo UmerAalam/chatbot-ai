@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { authClient } from "./auth-client";
 import { useNavigate } from "@tanstack/react-router";
+
 type User =
   | {
       id: string;
@@ -14,25 +15,31 @@ type User =
   | undefined;
 
 export async function fetchSession() {
-  const res = await authClient.getSession();
-  const session = res.data;
-  console.log(session);
-  return session?.user;
+  try {
+    const res = await authClient.getSession();
+    return res.data?.user;
+  } catch (err) {
+    return undefined;
+  }
 }
 export function useAuth() {
-  const [user, setUser] = useState<User | undefined>(undefined);
+  const [user, setUser] = useState<User>(undefined);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   useEffect(() => {
-    fetchSession().then((user) => {
-      if (!user) {
-        console.log("User isn't available");
-        return navigate({ to: "/" });
+    const checkSession = async () => {
+      const currentUser = await fetchSession();
+      if (!currentUser) {
+        setLoading(false);
+        navigate({ to: "/" });
+        return;
       }
-      setUser(user);
+
+      setUser(currentUser);
       setLoading(false);
-    });
-  }, []);
+    };
+    checkSession();
+  }, [navigate]);
 
   return { user, loading };
 }

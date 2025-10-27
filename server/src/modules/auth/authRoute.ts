@@ -3,9 +3,7 @@ import { auth } from "../../lib/auth";
 
 export const authRoute = new Hono();
 
-authRoute.all("auth/*", async (c) => {
-  return auth.handler(c.req.raw);
-});
+authRoute.all("/auth/*", (c) => auth.handler(c.req.raw));
 
 authRoute.get("/auth/session", async (c) => {
   const session = await auth.api.getSession({

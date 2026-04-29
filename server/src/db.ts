@@ -1,6 +1,7 @@
-// import { drizzle } from "drizzle-orm/neon-http";
-import { drizzle } from "drizzle-orm/node-postgres";
-import "dotenv/config";
-const db = drizzle(process.env.DATABASE_URL!);
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+
+const queryClient = postgres(process.env.DATABASE_URL!);
+const db = drizzle({ client: queryClient });
 
 export default db;

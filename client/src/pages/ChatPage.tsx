@@ -14,8 +14,13 @@ import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addChatToChats, clearChats, getChats } from "src/app/slices/chatSlice";
 import { useAuth } from "src/lib/FetchUser";
 import { loadSettings } from "src/lib/settings";
+import { useNavigate } from "@tanstack/react-router";
+import { client } from "src/lib/client";
+
+const pendingPromptKey = (id: number) => `pending-first-prompt-${id}`;
 function ChatPage(props: { chatbar_id?: number }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const chatbar_id = props.chatbar_id || 0;
   const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
   const localChats = useAppSelector(getChats);
@@ -26,6 +31,7 @@ function ChatPage(props: { chatbar_id?: number }) {
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
+  const handledPendingPrompt = useRef(false);
   useEffect(() => {
     if (chats) {
       const sorted = [...chats].sort((a, b) => {
@@ -37,6 +43,14 @@ function ChatPage(props: { chatbar_id?: number }) {
       setInitialChats(sorted);
     }
   }, [chats, chatbar_id, props.chatbar_id, dispatch]);
+  useEffect(() => {
+    if (!chatbar_id || handledPendingPrompt.current) return;
+    const queued = sessionStorage.getItem(pendingPromptKey(chatbar_id));
+    if (!queued || queued.trim().length === 0) return;
+    handledPendingPrompt.current = true;
+    sessionStorage.removeItem(pendingPromptKey(chatbar_id));
+    void handleChatSubmit(queued);
+  }, [chatbar_id]);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -85,9 +99,15 @@ function ChatPage(props: { chatbar_id?: number }) {
         ollamaUrl: settings.ollamaUrl,
         modelProvider: settings.modelProvider,
         openaiModel: settings.openaiModel,
+        openrouterModel: settings.openrouterModel,
+        openrouterBaseUrl: settings.openrouterBaseUrl,
         ollamaModel: settings.ollamaModel,
       }),
     });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(detail || `Request failed with status ${res.status}`);
+    }
     if (!res.body) throw new Error("No body");
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -113,6 +133,26 @@ function ChatPage(props: { chatbar_id?: number }) {
   const handleChatSubmit = async (text: string) => {
     const userText = text.trim();
     if (!userText) return;
+    if (chatbar_id === 0) {
+      const res = await client.api.chatbarchat.$post({
+        json: {
+          chat_name: userText.slice(0, 50),
+          folder_id: "DEFAULT",
+          email: user?.email || "",
+        },
+      });
+      if (!res.ok) {
+        throw new Error("Failed to create chat");
+      }
+      const data = (await res.json()) as Array<{ id: number }>;
+      const first = data?.[0];
+      if (!first?.id) {
+        throw new Error("Failed to open chat");
+      }
+      sessionStorage.setItem(pendingPromptKey(first.id), userText);
+      navigate({ to: "/chatpage/$pageId", params: { pageId: String(first.id) } });
+      return;
+    }
     let role: "user" | "assistant" = "user"; // default role
     if (localChats.length > 0) {
       const last = localChats[localChats.length - 1];
@@ -133,24 +173,38 @@ function ChatPage(props: { chatbar_id?: number }) {
       email: user?.email,
       role: "user",
     });
-    const final = await streamAnswer(userText, (chunk) =>
-      setText((prev) => prev + chunk),
-    );
-    dispatch(
-      addChatToChats({
+    try {
+      const final = await streamAnswer(userText, (chunk) =>
+        setText((prev) => prev + chunk),
+      );
+      dispatch(
+        addChatToChats({
+          text: final,
+          chatbar_id,
+          email: user?.email || "",
+          role: "assistant",
+        }),
+      );
+      setText("");
+      await createChat({
         text: final,
-        chatbar_id,
-        email: user?.email || "",
+        chatbar_id: chatbar_id.toString(),
+        email: user?.email,
         role: "assistant",
-      }),
-    );
-    setText("");
-    await createChat({
-      text: final,
-      chatbar_id: chatbar_id.toString(),
-      email: user?.email,
-      role: "assistant",
-    });
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get assistant response";
+      setText("");
+      dispatch(
+        addChatToChats({
+          text: message,
+          chatbar_id,
+          email: user?.email || "",
+          role: "assistant",
+        }),
+      );
+    }
   };
   const items = useMemo(() => {
     if (!initialChats) return [];
@@ -202,9 +256,9 @@ function ChatPage(props: { chatbar_id?: number }) {
             ref={panelRef}
             id="chat-panel"
             aria-hidden={!isOpen}
-            className="fixed left-0 top-0 w-full pointer-events-auto"
+            className={`fixed left-0 top-0 w-full ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
           >
-            <ChatsBar handleBtn={handleChatPanel} />
+            <ChatsBar handleBtn={handleChatPanel} disabled={!isOpen} />
           </aside>
         </div>
         <div className="w-full flex flex-row h-full min-h-screen bg-black relative">

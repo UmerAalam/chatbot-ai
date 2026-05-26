@@ -1,17 +1,15 @@
 import { useUserChatBarChats } from "src/query/chatbarchat";
 import ChatShortcut from "./ChatShortcut";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useAuth } from "src/lib/FetchUser";
 
 interface Props {
   searchTerm: string;
 }
 const ChatBarChatList = ({ searchTerm }: Props) => {
-  const [email, setEmail] = useState("");
+  const { user } = useAuth();
+  const email = user?.email || "";
   const { data: chatbarchats, isLoading } = useUserChatBarChats(email);
-  useEffect(() => {
-    const stored = localStorage.getItem("email");
-    if (stored) setEmail(stored);
-  }, []);
   const items = useMemo(() => {
     if (!chatbarchats) return [];
     const list = searchTerm.trim()

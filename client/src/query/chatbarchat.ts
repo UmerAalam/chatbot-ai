@@ -98,7 +98,7 @@ const userChatBarChats = (email: string) => {
       const data = await res.json();
       return data as ChatBarChat[];
     },
-    queryKey: ["chatbarchats"],
+    queryKey: ["chatbarchats", email],
     enabled: !!email,
   });
 };

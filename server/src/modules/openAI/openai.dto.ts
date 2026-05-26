@@ -5,8 +5,10 @@ export const promptSchema = z.object({
   apiKey: z.string().optional(),
   databaseUrl: z.string().optional(),
   ollamaUrl: z.string().optional(),
-  modelProvider: z.enum(["openai", "ollama"]).optional(),
+  modelProvider: z.enum(["openai", "openrouter", "ollama"]).optional(),
   openaiModel: z.string().optional(),
+  openrouterModel: z.string().optional(),
+  openrouterBaseUrl: z.string().optional(),
   ollamaModel: z.string().optional(),
 });
 

@@ -1,7 +1,14 @@
-import SignUpPage from "./SignUpPage";
+import { useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 
 function HomePage() {
-  return <SignUpPage />;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate({ to: "/signin", replace: true });
+  }, [navigate]);
+
+  return null;
 }
 
 export default HomePage;

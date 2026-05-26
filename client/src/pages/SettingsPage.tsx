@@ -23,14 +23,20 @@ function SettingsPage() {
         <select
           value={settings.modelProvider}
           onChange={(e) =>
-            setSettings({ ...settings, modelProvider: e.target.value as "openai" | "ollama" })
+            setSettings({
+              ...settings,
+              modelProvider: e.target.value as "openai" | "openrouter" | "ollama",
+            })
           }
           className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
         >
           <option value="ollama">Ollama (Local)</option>
           <option value="openai">OpenAI</option>
+          <option value="openrouter">OpenRouter</option>
         </select>
-        <label className="text-sm text-gray-200">API Key (for OpenAI)</label>
+        <label className="text-sm text-gray-200">
+          API Key (OpenAI/OpenRouter)
+        </label>
         <input
           value={settings.apiKey}
           onChange={(e) => setSettings({ ...settings, apiKey: e.target.value })}
@@ -55,6 +61,22 @@ function SettingsPage() {
         <input
           value={settings.openaiModel}
           onChange={(e) => setSettings({ ...settings, openaiModel: e.target.value })}
+          className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
+        />
+        <label className="text-sm text-gray-200">OpenRouter Base URL</label>
+        <input
+          value={settings.openrouterBaseUrl}
+          onChange={(e) =>
+            setSettings({ ...settings, openrouterBaseUrl: e.target.value })
+          }
+          className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
+        />
+        <label className="text-sm text-gray-200">OpenRouter Model</label>
+        <input
+          value={settings.openrouterModel}
+          onChange={(e) =>
+            setSettings({ ...settings, openrouterModel: e.target.value })
+          }
           className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
         />
         <label className="text-sm text-gray-200">Ollama Model</label>

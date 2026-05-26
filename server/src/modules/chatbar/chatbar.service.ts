@@ -14,10 +14,18 @@ export const AddChatBarChat = async (chatbarchat: ChatBarChat) => {
     .returning();
   return res;
 };
-export const DeleteChatBarChat = async (chatbar_id: string) => {
+export const DeleteChatsByChatbarId = async (chatbar_id: string) => {
   const res = await db
     .delete(chatsTable)
     .where(eq(chatsTable.chatbar_id, chatbar_id))
+    .returning();
+  return res;
+};
+export const DeleteChatBarChatById = async (id: number) => {
+  await DeleteChatsByChatbarId(id.toString());
+  const res = await db
+    .delete(chatbarchatsTable)
+    .where(eq(chatbarchatsTable.id, id))
     .returning();
   return res;
 };

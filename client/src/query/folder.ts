@@ -82,7 +82,7 @@ const userFoldersByEmail = (email: string) => {
       const data = await res.json();
       return data as Folder[];
     },
-    queryKey: ["folders"],
+    queryKey: ["folders", email],
     enabled: !!email,
   });
 };

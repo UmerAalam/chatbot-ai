@@ -8,7 +8,7 @@ import {
 } from "./chat.dto";
 import "dotenv/config";
 import { AddChat, UserChatsByChatbarID } from "./chat.service";
-import { DeleteChatBarChat } from "../chatbar/chatbar.service";
+import { DeleteChatsByChatbarId } from "../chatbar/chatbar.service";
 
 export const chatRoute = new Hono()
   .basePath("chats")
@@ -18,8 +18,8 @@ export const chatRoute = new Hono()
     return c.json(res, 200);
   })
   .delete("/", zValidator("json", deleteChatSchema), async (c) => {
-    const { id } = await c.req.json();
-    const res = await DeleteChatBarChat(id);
+    const { chatbar_id } = c.req.valid("json");
+    const res = await DeleteChatsByChatbarId(chatbar_id);
     return c.json(res, 200);
   })
   .get("/", zValidator("query", chatsByChatBarChatIDSchema), async (c) => {

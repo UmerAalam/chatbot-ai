@@ -11,12 +11,19 @@ const Avatar = () => {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [email, setEmail] = useState("");
   const username = email.split("@")[0];
+  const fallbackLetter = (
+    user?.name?.trim()?.[0] ||
+    user?.email?.trim()?.[0] ||
+    "U"
+  ).toUpperCase();
   const navigate = useNavigate();
   useEffect(() => {
     const LoadUserDetails = async () => {
       if (!user) return;
       setEmail(user.email);
-      setAvatar(user.image || "");
+      const image = user.image || "";
+      setAvatar(image);
+      setShowCustomAvatar(!image);
     };
     LoadUserDetails();
   }, [loading, user]);
@@ -73,8 +80,8 @@ const Avatar = () => {
         </div>
       )}
       {showCustomAvatar ? (
-        <div className="flex justify-center select-none items-center font-bold text-white text-xl w-full h-full bg-green-700 rounded-full">
-          {user && user?.name.slice(0, 1)}
+        <div className="flex justify-center select-none items-center font-extrabold text-white text-xl w-full h-full bg-green-700 rounded-full">
+          {fallbackLetter}
         </div>
       ) : (
         <img

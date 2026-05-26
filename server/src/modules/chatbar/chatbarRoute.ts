@@ -11,7 +11,7 @@ import {
 } from "./chatbar.dto";
 import {
   AddChatBarChat,
-  DeleteChatBarChat,
+  DeleteChatBarChatById,
   UpdateChatBarChat,
   UserChatsByEmail,
   UserChatsByFolderID,
@@ -26,7 +26,7 @@ export const chatbarRoute = new Hono()
   })
   .delete("/", zValidator("json", deleteUserChatSchema), async (c) => {
     const { id } = await c.req.json();
-    const res = await DeleteChatBarChat(id);
+    const res = await DeleteChatBarChatById(id);
     return c.json(res, 200);
   })
   .patch("/", zValidator("json", renameChatBarChatSchema), async (c) => {

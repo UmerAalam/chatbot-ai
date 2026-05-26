@@ -9,11 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatpageIndexRouteImport } from './routes/chatpage/index'
 import { Route as ChatpagePageIdRouteImport } from './routes/chatpage/$pageId'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -38,12 +50,16 @@ const ChatpagePageIdRoute = ChatpagePageIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
+  '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/chatpage/$pageId': typeof ChatpagePageIdRoute
-  '/chatpage': typeof ChatpageIndexRoute
+  '/chatpage/': typeof ChatpageIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
+  '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/chatpage/$pageId': typeof ChatpagePageIdRoute
   '/chatpage': typeof ChatpageIndexRoute
 }
@@ -51,26 +67,63 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
+  '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/chatpage/$pageId': typeof ChatpagePageIdRoute
   '/chatpage/': typeof ChatpageIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings' | '/chatpage/$pageId' | '/chatpage'
+  fullPaths:
+    | '/'
+    | '/settings'
+    | '/signin'
+    | '/signup'
+    | '/chatpage/$pageId'
+    | '/chatpage/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/chatpage/$pageId' | '/chatpage'
-  id: '__root__' | '/' | '/settings' | '/chatpage/$pageId' | '/chatpage/'
+  to:
+    | '/'
+    | '/settings'
+    | '/signin'
+    | '/signup'
+    | '/chatpage/$pageId'
+    | '/chatpage'
+  id:
+    | '__root__'
+    | '/'
+    | '/settings'
+    | '/signin'
+    | '/signup'
+    | '/chatpage/$pageId'
+    | '/chatpage/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SettingsRoute: typeof SettingsRoute
+  SigninRoute: typeof SigninRoute
+  SignupRoute: typeof SignupRoute
   ChatpagePageIdRoute: typeof ChatpagePageIdRoute
   ChatpageIndexRoute: typeof ChatpageIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -88,7 +141,7 @@ declare module '@tanstack/react-router' {
     '/chatpage/': {
       id: '/chatpage/'
       path: '/chatpage'
-      fullPath: '/chatpage'
+      fullPath: '/chatpage/'
       preLoaderRoute: typeof ChatpageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -105,9 +158,20 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SettingsRoute: SettingsRoute,
+  SigninRoute: SigninRoute,
+  SignupRoute: SignupRoute,
   ChatpagePageIdRoute: ChatpagePageIdRoute,
   ChatpageIndexRoute: ChatpageIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

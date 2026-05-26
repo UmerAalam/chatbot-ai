@@ -1,4 +1,4 @@
-export type ModelProvider = "openai" | "ollama";
+export type ModelProvider = "openai" | "openrouter" | "ollama";
 
 export type AppSettings = {
   apiKey: string;
@@ -6,6 +6,8 @@ export type AppSettings = {
   ollamaUrl: string;
   modelProvider: ModelProvider;
   openaiModel: string;
+  openrouterModel: string;
+  openrouterBaseUrl: string;
   ollamaModel: string;
 };
 
@@ -17,6 +19,8 @@ export const defaultSettings: AppSettings = {
   ollamaUrl: "http://localhost:11434",
   modelProvider: "ollama",
   openaiModel: "gpt-4.1-mini",
+  openrouterModel: "openai/gpt-4o-mini",
+  openrouterBaseUrl: "https://openrouter.ai/api/v1",
   ollamaModel: "llama3.2",
 };
 

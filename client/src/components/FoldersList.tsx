@@ -1,6 +1,7 @@
 import { useFolders } from "src/query/folder";
 import ChatFolder from "./ChatFolder";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useAuth } from "src/lib/FetchUser";
 
 interface FolderProps {
   name: string;
@@ -11,12 +12,9 @@ interface Props {
   showChatFolder: ({ name, folder_id }: FolderProps) => void;
 }
 const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
-  const [email, setEmail] = useState("");
+  const { user } = useAuth();
+  const email = user?.email || "";
   const { data: folders, isLoading: folderLoading } = useFolders(email);
-  useEffect(() => {
-    const stored = localStorage.getItem("email");
-    if (stored) setEmail(stored);
-  }, []);
   const items = useMemo(() => {
     if (!folders) return [];
     const list = searchTerm.trim()

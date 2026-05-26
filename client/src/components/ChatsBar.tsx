@@ -12,8 +12,9 @@ import FoldersList from "./FoldersList";
 import { useAuth } from "src/lib/FetchUser";
 interface Props extends HTMLAttributes<HTMLDivElement> {
   handleBtn?: () => void;
+  disabled?: boolean;
 }
-function ChatsBar({ handleBtn, ...rest }: Props) {
+function ChatsBar({ handleBtn, disabled = false, ...rest }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const { user } = useAuth();
   const { mutate: createChat } = useChatBarChatCreate();
@@ -24,6 +25,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
   const [folderName, setFolderName] = useState("");
   const [folderId, setFolderId] = useState("");
   const handleChatSubmit = (text: string) => {
+    if (disabled) return;
     createChat({
       chat_name: text,
       folder_id: "DEFAULT",
@@ -32,6 +34,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
     setShowChatAlert(false);
   };
   const handleChatSubmitByFolderID = (props: { text: string }) => {
+    if (disabled) return;
     if (folderId)
       createChat({
         chat_name: props.text,
@@ -41,6 +44,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
     setShowChatAlert(false);
   };
   const handleFolderSubmit = (name: string) => {
+    if (disabled) return;
     createFolder({
       email: user?.email || "",
       folder_name: name,
@@ -97,6 +101,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
           <div className="flex items-center gap-3">
             <Button
               onClick={handleBtn}
+              disabled={disabled}
               id="arrow-Btn"
               className={`bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full size-8 backdrop-blur-2xl`}
             >
@@ -116,12 +121,12 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
                 </div>
                 <div className="flex gap-1 items-center p-1 rounded-full backdrop-blur-2xl">
                   <FaArrowLeft
-                    onClick={() => setShowChatFolder(!showChatFolder)}
+                    onClick={() => !disabled && setShowChatFolder(!showChatFolder)}
                     className="hover:bg-gray-700 text-white/80 rounded-full backdrop-blur-2xl p-1.5"
                     size={26}
                   />
                   <IoMdAdd
-                    onClick={() => setShowChatAlert(true)}
+                    onClick={() => !disabled && setShowChatAlert(true)}
                     className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
                     size={24}
                   />
@@ -131,7 +136,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
               <>
                 <div className="flex pt-0.5">Folders</div>
                 <IoMdAdd
-                  onClick={() => setShowFolderAlert(true)}
+                  onClick={() => !disabled && setShowFolderAlert(true)}
                   className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
                   size={24}
                 />
@@ -152,7 +157,7 @@ function ChatsBar({ handleBtn, ...rest }: Props) {
               <div className="text-white w-full px-2.5 flex justify-between items-center mt-3 font-semibold">
                 <div className="flex pt-0.5">Chats</div>
                 <IoMdAdd
-                  onClick={() => setShowChatAlert(true)}
+                  onClick={() => !disabled && setShowChatAlert(true)}
                   className="hover:bg-gray-700 text-white/80 rounded-full p-1 backdrop-blur-2xl"
                   size={24}
                 />

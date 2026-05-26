@@ -15,7 +15,7 @@ const SETTINGS_KEY = "chatbot_settings";
 
 export const defaultSettings: AppSettings = {
   apiKey: "",
-  databaseUrl: "",
+  databaseUrl: "postgresql://chatbot_user:chatbot_password@localhost:5432/chatbot_ai",
   ollamaUrl: "http://localhost:11434",
   modelProvider: "ollama",
   openaiModel: "gpt-4.1-mini",
@@ -29,7 +29,11 @@ export const loadSettings = (): AppSettings => {
   const raw = window.localStorage.getItem(SETTINGS_KEY);
   if (!raw) return defaultSettings;
   try {
-    return { ...defaultSettings, ...(JSON.parse(raw) as Partial<AppSettings>) };
+    const merged = { ...defaultSettings, ...(JSON.parse(raw) as Partial<AppSettings>) };
+    if (!merged.databaseUrl.trim()) {
+      merged.databaseUrl = defaultSettings.databaseUrl;
+    }
+    return merged;
   } catch {
     return defaultSettings;
   }

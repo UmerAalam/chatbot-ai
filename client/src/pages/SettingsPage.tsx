@@ -8,10 +8,27 @@ function SettingsPage() {
   const [settings, setSettings] = useState<AppSettings>(loadSettings());
   const [showApiKey, setShowApiKey] = useState(false);
   const [showDatabaseUrl, setShowDatabaseUrl] = useState(false);
+  const [isDatabaseConnected, setIsDatabaseConnected] = useState(
+    Boolean(loadSettings().databaseUrl.trim()),
+  );
 
   useEffect(() => {
-    setSettings(loadSettings());
+    const loadedSettings = loadSettings();
+    setSettings(loadedSettings);
+    setIsDatabaseConnected(Boolean(loadedSettings.databaseUrl.trim()));
   }, []);
+
+  const onConnectDatabase = () => {
+    const databaseUrl = settings.databaseUrl.trim();
+    if (!databaseUrl) {
+      setIsDatabaseConnected(false);
+      return;
+    }
+    const nextSettings = { ...settings, databaseUrl };
+    setSettings(nextSettings);
+    saveSettings(nextSettings);
+    setIsDatabaseConnected(true);
+  };
 
   const onSave = () => {
     saveSettings(settings);
@@ -22,9 +39,9 @@ function SettingsPage() {
     <div className="min-h-screen bg-black text-white flex justify-center px-4 py-10 relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.35),_transparent_40%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(59,130,246,0.18),_transparent_45%)]" />
-      <div className="relative w-full max-w-2xl bg-gray-700/20 backdrop-blur-2xl border border-gray-700/50 rounded-2xl p-6 flex flex-col gap-4 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
+      <div className="relative w-full max-w-2xl bg-gray-700/20 backdrop-blur-2xl border border-gray-700/50 rounded-2xl p-6 flex flex-col gap-4 shadow-[0_0_0_1px_rgba(255,255,255,0.03)] font-semibold">
         <h1 className="text-2xl font-bold">Settings</h1>
-        <label className="text-sm text-gray-200">Model Provider</label>
+        <label className="text-sm text-gray-200 font-bold">Model Provider</label>
         <select
           value={settings.modelProvider}
           onChange={(e) =>
@@ -39,7 +56,7 @@ function SettingsPage() {
           <option value="openai">OpenAI</option>
           <option value="openrouter">OpenRouter</option>
         </select>
-        <label className="text-sm text-gray-200">
+        <label className="text-sm text-gray-200 font-bold">
           API Key (OpenAI/OpenRouter)
         </label>
         <div className="relative">
@@ -59,38 +76,54 @@ function SettingsPage() {
             {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        <label className="text-sm text-gray-200">Database URL</label>
-        <div className="relative">
-          <input
-            type={showDatabaseUrl ? "text" : "password"}
-            value={settings.databaseUrl}
-            onChange={(e) => setSettings({ ...settings, databaseUrl: e.target.value })}
-            placeholder="postgresql://..."
-            className="h-11 w-full rounded-lg px-3 pr-10 bg-gray-800 border border-gray-700"
-          />
+        <label className="text-sm text-gray-200 font-bold">Database URL</label>
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <input
+              type={showDatabaseUrl ? "text" : "password"}
+              value={settings.databaseUrl}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSettings({ ...settings, databaseUrl: value });
+                if (!value.trim()) {
+                  setIsDatabaseConnected(false);
+                }
+              }}
+              placeholder="postgresql://..."
+              className="h-11 w-full rounded-lg px-3 pr-10 bg-gray-800 border border-gray-700"
+            />
+            <button
+              type="button"
+              onClick={() => setShowDatabaseUrl((prev) => !prev)}
+              aria-label={showDatabaseUrl ? "Hide database URL" : "Show database URL"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white"
+            >
+              {showDatabaseUrl ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           <button
             type="button"
-            onClick={() => setShowDatabaseUrl((prev) => !prev)}
-            aria-label={showDatabaseUrl ? "Hide database URL" : "Show database URL"}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white"
+            onClick={onConnectDatabase}
+            disabled={isDatabaseConnected}
+            className="h-11 px-4 rounded-lg border border-gray-700 bg-gray-800 text-sm font-semibold text-white disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {showDatabaseUrl ? <EyeOff size={18} /> : <Eye size={18} />}
+            {isDatabaseConnected ? "Connected" : "Connect"}
           </button>
         </div>
-        <label className="text-sm text-gray-200">Ollama Base URL</label>
+        <label className="text-sm text-gray-200 font-bold">Ollama Base URL</label>
         <input
           value={settings.ollamaUrl}
           onChange={(e) => setSettings({ ...settings, ollamaUrl: e.target.value })}
           placeholder="http://localhost:11434"
           className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
         />
-        <label className="text-sm text-gray-200">OpenAI Model</label>
+        <label className="text-sm text-gray-200 font-bold">OpenAI Model</label>
         <input
           value={settings.openaiModel}
           onChange={(e) => setSettings({ ...settings, openaiModel: e.target.value })}
           className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
         />
-        <label className="text-sm text-gray-200">OpenRouter Base URL</label>
+        <label className="text-sm text-gray-200 font-bold">OpenRouter Base URL</label>
         <input
           value={settings.openrouterBaseUrl}
           onChange={(e) =>
@@ -98,7 +131,7 @@ function SettingsPage() {
           }
           className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
         />
-        <label className="text-sm text-gray-200">OpenRouter Model</label>
+        <label className="text-sm text-gray-200 font-bold">OpenRouter Model</label>
         <input
           value={settings.openrouterModel}
           onChange={(e) =>
@@ -106,7 +139,7 @@ function SettingsPage() {
           }
           className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
         />
-        <label className="text-sm text-gray-200">Ollama Model</label>
+        <label className="text-sm text-gray-200 font-bold">Ollama Model</label>
         <input
           value={settings.ollamaModel}
           onChange={(e) => setSettings({ ...settings, ollamaModel: e.target.value })}

@@ -3,7 +3,7 @@ import { auth } from "../../lib/auth";
 
 export const authRoute = new Hono();
 
-authRoute.all("auth/*", async (c) => {
+authRoute.all("/auth/*", async (c) => {
   return auth.handler(c.req.raw);
 });
 

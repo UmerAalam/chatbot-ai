@@ -14,11 +14,12 @@ const Avatar = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const LoadUserDetails = async () => {
-      setEmail(user!.email);
-      setAvatar(user!.image!);
+      if (!user) return;
+      setEmail(user.email);
+      setAvatar(user.image || "");
     };
     LoadUserDetails();
-  }, [loading]);
+  }, [loading, user]);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -55,6 +56,12 @@ const Avatar = () => {
           <ul className="flex flex-col text-sm">
             <li className="flex justify-start items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-lg text-gray-300 hover:text-gray-400">
               {username}
+            </li>
+            <li
+              onClick={() => navigate({ to: "/settings" })}
+              className="flex justify-start items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-lg text-gray-200 hover:text-white"
+            >
+              Settings
             </li>
             <li
               onClick={() => handleSignOut()}

@@ -4,12 +4,9 @@ import { useNavigate } from "@tanstack/react-router";
 type User =
   | {
       id: string;
-      createdAt: Date;
-      updatedAt: Date;
       email: string;
-      emailVerified: boolean;
       name: string;
-      image?: string | null | undefined;
+      image?: string | null;
     }
   | undefined;
 
@@ -25,12 +22,13 @@ export function useAuth() {
   useEffect(() => {
     fetchSession().then((user) => {
       if (!user) {
+        setLoading(false);
         return navigate({ to: "/" });
       }
       setUser(user);
       setLoading(false);
     });
-  }, []);
+  }, [navigate]);
 
   return { user, loading };
 }

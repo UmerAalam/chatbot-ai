@@ -7,7 +7,6 @@ import { openaiRoute } from "./modules/openAI/openaiRoute";
 import { folderRoute } from "./modules/folder/folder.route";
 import { chatbarRoute } from "./modules/chatbar/chatbarRoute";
 import { chatRoute } from "./modules/chats/chat.route";
-import { authRoute } from "./modules/auth/authRoute";
 const app = new Hono()
   .use(logger())
   .use(
@@ -19,7 +18,6 @@ const app = new Hono()
       credentials: true,
     }),
   )
-  .route("/api", authRoute)
   .route("/api", openaiRoute)
   .route("/api", chatbarRoute)
   .route("/api", folderRoute)

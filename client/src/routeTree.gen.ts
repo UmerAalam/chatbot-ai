@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatpageIndexRouteImport } from './routes/chatpage/index'
 import { Route as ChatpagePageIdRouteImport } from './routes/chatpage/$pageId'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,36 +37,47 @@ const ChatpagePageIdRoute = ChatpagePageIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/chatpage/$pageId': typeof ChatpagePageIdRoute
   '/chatpage': typeof ChatpageIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/chatpage/$pageId': typeof ChatpagePageIdRoute
   '/chatpage': typeof ChatpageIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/chatpage/$pageId': typeof ChatpagePageIdRoute
   '/chatpage/': typeof ChatpageIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chatpage/$pageId' | '/chatpage'
+  fullPaths: '/' | '/settings' | '/chatpage/$pageId' | '/chatpage'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chatpage/$pageId' | '/chatpage'
-  id: '__root__' | '/' | '/chatpage/$pageId' | '/chatpage/'
+  to: '/' | '/settings' | '/chatpage/$pageId' | '/chatpage'
+  id: '__root__' | '/' | '/settings' | '/chatpage/$pageId' | '/chatpage/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SettingsRoute: typeof SettingsRoute
   ChatpagePageIdRoute: typeof ChatpagePageIdRoute
   ChatpageIndexRoute: typeof ChatpageIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SettingsRoute: SettingsRoute,
   ChatpagePageIdRoute: ChatpagePageIdRoute,
   ChatpageIndexRoute: ChatpageIndexRoute,
 }

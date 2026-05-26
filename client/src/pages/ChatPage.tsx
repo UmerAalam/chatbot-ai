@@ -13,6 +13,7 @@ import { Chat, useChatCreate, useChatsByChatBarID } from "src/query/chats";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addChatToChats, clearChats, getChats } from "src/app/slices/chatSlice";
 import { useAuth } from "src/lib/FetchUser";
+import { loadSettings } from "src/lib/settings";
 function ChatPage(props: { chatbar_id?: number }) {
   const { user } = useAuth();
   const chatbar_id = props.chatbar_id || 0;
@@ -73,10 +74,19 @@ function ChatPage(props: { chatbar_id?: number }) {
     onChunk: (s: string) => void,
   ): Promise<string> => {
     let final = "";
+    const settings = loadSettings();
     const res = await fetch("/api/result", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({
+        prompt,
+        apiKey: settings.apiKey,
+        databaseUrl: settings.databaseUrl,
+        ollamaUrl: settings.ollamaUrl,
+        modelProvider: settings.modelProvider,
+        openaiModel: settings.openaiModel,
+        ollamaModel: settings.ollamaModel,
+      }),
     });
     if (!res.body) throw new Error("No body");
     const reader = res.body.getReader();

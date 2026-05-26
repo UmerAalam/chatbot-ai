@@ -5,10 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { client } from "src/lib/client";
-import type {
-  ChatBarChat,
-  RenameChatBarChat,
-} from "src/types/ChatBarChat.types";
+import type { ChatBarChat, RenameChatBarChat } from "src/types/ChatBarChat.types";
 
 export const useChatBarChatCreate = () => {
   const queryClient = useQueryClient();

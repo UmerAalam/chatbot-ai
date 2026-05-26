@@ -51,9 +51,7 @@ export function Sidebar({
         aria-hidden
         className={[
           "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity",
-          open
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none",
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
         ].join(" ")}
       />
       <aside

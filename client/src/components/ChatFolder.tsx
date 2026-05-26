@@ -44,8 +44,7 @@ function ChatFolder({ id, onRowClick, currentName, ...rest }: Props) {
   };
 
   const confirmRename = () => {
-    if (id != null && name.trim())
-      renameFolder({ id, folder_name: name.trim() });
+    if (id != null && name.trim()) renameFolder({ id, folder_name: name.trim() });
     setIsRenaming(false);
   };
 

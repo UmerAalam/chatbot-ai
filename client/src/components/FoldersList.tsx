@@ -44,8 +44,7 @@ const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
             id={folder.id}
             currentName={folder.folder_name}
             onRowClick={(name) => {
-              folder.id &&
-                showChatFolder({ name, folder_id: folder.id.toString() });
+              folder.id && showChatFolder({ name, folder_id: folder.id.toString() });
             }}
           />
         </div>

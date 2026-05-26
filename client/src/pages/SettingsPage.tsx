@@ -134,9 +134,7 @@ function SettingsPage() {
         <label className="text-sm text-gray-200 font-bold">OpenRouter Model</label>
         <input
           value={settings.openrouterModel}
-          onChange={(e) =>
-            setSettings({ ...settings, openrouterModel: e.target.value })
-          }
+          onChange={(e) => setSettings({ ...settings, openrouterModel: e.target.value })}
           className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
         />
         <label className="text-sm text-gray-200 font-bold">Ollama Model</label>

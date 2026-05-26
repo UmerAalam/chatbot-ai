@@ -2,6 +2,30 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { promptSchema } from "./openai.dto";
 import OpenAI from "openai";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+
+const INSTRUCTIONS_FILE_PATHS = [
+  path.resolve(process.cwd(), "src/modules/openAI/instructions"),
+  path.resolve(process.cwd(), "server/src/modules/openAI/instructions"),
+];
+
+const loadInstructions = async (): Promise<string> => {
+  for (const filePath of INSTRUCTIONS_FILE_PATHS) {
+    try {
+      const content = await readFile(filePath, "utf-8");
+      const trimmed = content.trim();
+      if (trimmed) return trimmed;
+    } catch {
+      // try the next path
+    }
+  }
+  return [
+    "You are a practical coding assistant.",
+    "Be concise and accurate.",
+    "For coding tasks, provide copy-paste-ready code in fenced code blocks.",
+  ].join("\n");
+};
 
 export const openaiRoute = new Hono()
   .basePath("result")
@@ -18,12 +42,8 @@ export const openaiRoute = new Hono()
     } = c.req.valid("json");
 
     try {
-      const responseGuidelines = [
-        "Write clean, readable answers.",
-        "When you include code, use fenced code blocks with the correct language tag.",
-        "In code, use descriptive variable names and never output placeholder values like [object Object].",
-      ].join("\n");
-      const modelInput = `${responseGuidelines}\n\nUser request:\n${prompt}`;
+      const instructions = await loadInstructions();
+      const modelInput = `${instructions}\n\nUser request:\n${prompt}`;
 
       if (modelProvider === "ollama") {
         const baseUrl = (ollamaUrl || "http://localhost:11434").replace(/\/+$/, "");
@@ -100,10 +120,7 @@ export const openaiRoute = new Hono()
       }
 
       if (!apiKey) {
-        return c.text(
-          "API key is required when provider is OpenAI/OpenRouter.",
-          400,
-        );
+        return c.text("API key is required when provider is OpenAI/OpenRouter.", 400);
       }
 
       const isOpenRouter = modelProvider === "openrouter";
@@ -111,11 +128,10 @@ export const openaiRoute = new Hono()
         apiKey,
         ...(isOpenRouter
           ? {
-              baseURL:
-                (openrouterBaseUrl || "https://openrouter.ai/api/v1").replace(
-                  /\/+$/,
-                  "",
-                ),
+              baseURL: (openrouterBaseUrl || "https://openrouter.ai/api/v1").replace(
+                /\/+$/,
+                "",
+              ),
               defaultHeaders: {
                 "HTTP-Referer": "http://localhost:3000",
                 "X-Title": "ChatBot AI",

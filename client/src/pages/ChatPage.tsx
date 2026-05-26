@@ -23,12 +23,11 @@ import {
 } from "src/lib/threadId";
 
 const pendingPromptKey = (threadId: string) => `pending_prompt_${threadId}`;
+const TEMP_CHAT_ID = "TEMP_SESSION_CHAT";
+const TEMP_CHAT_MODE_KEY = "temp_chat_mode";
 
 const getChatTitleFromPrompt = (prompt: string) => {
-  const words = prompt
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+  const words = prompt.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return "New Chat";
   return words.slice(0, 4).join(" ");
 };
@@ -82,6 +81,13 @@ function ChatPage(props: { chatbar_id?: string }) {
   const [text, setText] = useState("");
   const [showMoveToTop, setShowMoveToTop] = useState(false);
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
+  const [isTemporaryChat, setIsTemporaryChat] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = window.sessionStorage.getItem(TEMP_CHAT_MODE_KEY);
+    setIsTemporaryChat(raw === "1");
+  }, []);
   const handledPendingPromptFor = useRef<string | null>(null);
   const [settings, setSettings] = useState<AppSettings>(loadSettings());
   useEffect(() => {
@@ -96,13 +102,14 @@ function ChatPage(props: { chatbar_id?: string }) {
 
   useEffect(() => {
     if (!chats) return;
+    if (isTemporaryChat) return;
     const sorted = [...chats].sort((a, b) => {
       const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
       const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
       return dateA - dateB;
     });
     setInitialChats(sorted);
-  }, [chats]);
+  }, [chats, isTemporaryChat]);
   useEffect(() => {
     if (isHomePage) return;
     if (loading || !user?.email) return;
@@ -229,7 +236,7 @@ function ChatPage(props: { chatbar_id?: string }) {
   const handleChatSubmit = async (text: string) => {
     const userText = text.trim();
     if (!userText) return;
-    if (loading || !user?.email) {
+    if (!isTemporaryChat && (loading || !user?.email)) {
       dispatch(
         addChatToChats({
           text: "Session is still loading. Please try again in a moment.",
@@ -240,8 +247,8 @@ function ChatPage(props: { chatbar_id?: string }) {
       );
       return;
     }
-    let targetChatbarId = resolvedChatbarId;
-    if (isHomePage) {
+    let targetChatbarId = isTemporaryChat ? TEMP_CHAT_ID : resolvedChatbarId;
+    if (!isTemporaryChat && isHomePage) {
       const res = await client.api.chatbarchat.$post({
         json: {
           chat_name: getChatTitleFromPrompt(userText),
@@ -272,6 +279,35 @@ function ChatPage(props: { chatbar_id?: string }) {
       }),
     );
     setText("");
+    if (isTemporaryChat) {
+      try {
+        const final = await streamAnswer(userText, (chunk) =>
+          setText((prev) => prev + chunk),
+        );
+        dispatch(
+          addChatToChats({
+            text: final,
+            chatbar_id: targetChatbarId,
+            email: "",
+            role: "assistant",
+          }),
+        );
+        setText("");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to get assistant response";
+        setText("");
+        dispatch(
+          addChatToChats({
+            text: message,
+            chatbar_id: targetChatbarId,
+            email: "",
+            role: "assistant",
+          }),
+        );
+      }
+      return;
+    }
     await createChat({
       text: userText,
       chatbar_id: String(
@@ -327,6 +363,7 @@ function ChatPage(props: { chatbar_id?: string }) {
     () => hideResolvedAssistantWarnings(items, settings.modelProvider),
     [items, settings.modelProvider],
   );
+  const localFilterId = isTemporaryChat ? TEMP_CHAT_ID : resolvedChatbarId;
   const renderChatSections = visibleItems.map((chat) => {
     const isPrompt = chat.role === "user";
     const key = chat.id ?? `${chat.created_at}-${chat.role}`;
@@ -346,21 +383,22 @@ function ChatPage(props: { chatbar_id?: string }) {
   });
   const localVisibleChats = hideResolvedAssistantWarnings(
     localChats
-    .filter((chat) => String(chat.chatbar_id ?? "") === String(resolvedChatbarId))
-    .filter((chat) => {
-      // Hide optimistic entries once the same persisted message exists.
-      return !initialChats.some(
-        (saved) => saved.role === chat.role && saved.text === chat.text,
-      );
-    }),
+      .filter((chat) => String(chat.chatbar_id ?? "") === String(localFilterId))
+      .filter((chat) => {
+        // Hide optimistic entries once the same persisted message exists.
+        if (isTemporaryChat) return true;
+        return !initialChats.some(
+          (saved) => saved.role === chat.role && saved.text === chat.text,
+        );
+      }),
     settings.modelProvider,
   );
   const localChat = localVisibleChats.map((chat) => {
-      const isPrompt = chat.role === "user";
-      const key = chat.id ?? `${chat.created_at}-${chat.role}`;
-      return (
-        <div key={key} className="flex flex-col gap-2 w-auto h-auto">
-          {isPrompt ? (
+    const isPrompt = chat.role === "user";
+    const key = chat.id ?? `${chat.created_at}-${chat.role}`;
+    return (
+      <div key={key} className="flex flex-col gap-2 w-auto h-auto">
+        {isPrompt ? (
           <div className="flex justify-end">
             <PromptSection prompt={chat.text} />
           </div>
@@ -371,15 +409,17 @@ function ChatPage(props: { chatbar_id?: string }) {
         )}
       </div>
     );
-    });
+  });
   const hasRenderedChats =
-    initialChats.length > 0 || localChat.length > 0 || text.trim().length > 0;
+    (!isTemporaryChat && initialChats.length > 0) ||
+    localChat.length > 0 ||
+    text.trim().length > 0;
   const handleMoveToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   return (
     <>
-      <div className="flex bg-black min-h-screen">
+      <div className="flex bg-black min-h-screen overflow-x-hidden">
         <aside
           ref={panelRef}
           id="chat-panel"
@@ -389,7 +429,7 @@ function ChatPage(props: { chatbar_id?: string }) {
           <ChatsBar handleBtn={handleChatPanel} disabled={!isOpen} />
         </aside>
         <div
-          className={`w-full flex flex-row h-full min-h-screen bg-black relative transition-[margin] duration-300 ${isOpen ? "ml-[360px]" : "ml-12"}`}
+          className={`w-full flex flex-row h-full min-h-screen bg-black relative transition-[padding] duration-300 ${isOpen ? "pl-[360px]" : "pl-12"}`}
         >
           <div>
             <Avatar />
@@ -411,7 +451,42 @@ function ChatPage(props: { chatbar_id?: string }) {
               >
                 <div className="w-full flex flex-col items-center gap-2">
                   <SearchBar searchBtn={(prompt) => handleChatSubmit(prompt)} />
-                  <div className="w-[40%] flex justify-end">
+                  <div className="w-[40%] flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsTemporaryChat((prev) => {
+                          const next = !prev;
+                          window.sessionStorage.setItem(
+                            TEMP_CHAT_MODE_KEY,
+                            next ? "1" : "0",
+                          );
+                          dispatch(clearChats());
+                          setInitialChats([]);
+                          setText("");
+                          return next;
+                        });
+                      }}
+                      className={`h-9 rounded-xl px-3 text-sm border transition-colors flex items-center gap-2 ${
+                        isTemporaryChat
+                          ? "bg-amber-500/15 text-amber-200 border-amber-400/60"
+                          : "bg-[#041321]/90 text-slate-200 border-white/20 hover:border-white/35"
+                      }`}
+                    >
+                      <span>Temp Chat</span>
+                      <span
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                          isTemporaryChat ? "bg-amber-400/80" : "bg-slate-600/80"
+                        }`}
+                        aria-hidden="true"
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                            isTemporaryChat ? "translate-x-4" : "translate-x-0.5"
+                          }`}
+                        />
+                      </span>
+                    </button>
                     <select
                       value={selectedKey}
                       onChange={(e) => handleModelChange(e.target.value)}

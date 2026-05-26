@@ -3,10 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { MdDelete } from "react-icons/md";
-import {
-  useChatBarChatDelete,
-  useChatBarChatRename,
-} from "src/query/chatbarchat";
+import { useChatBarChatDelete, useChatBarChatRename } from "src/query/chatbarchat";
 
 type Props = {
   id?: number;
@@ -74,10 +71,7 @@ function ChatShortcut({ id, threadId, name: currentName }: Props) {
             >
               Rename
             </li>
-            <li
-              className="px-4 py-2 hover:bg-white/10 cursor-pointer"
-              role="menuitem"
-            >
+            <li className="px-4 py-2 hover:bg-white/10 cursor-pointer" role="menuitem">
               Move
             </li>
             <li

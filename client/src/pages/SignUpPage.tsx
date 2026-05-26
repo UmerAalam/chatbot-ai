@@ -6,8 +6,7 @@ import { useLocation, useNavigate } from "@tanstack/react-router";
 const SignUpPage = () => {
   const { user, loading } = useAuthGuard({ requireAuth: false });
   const location = useLocation();
-  const mode: "signin" | "signup" =
-    location.pathname === "/signup" ? "signup" : "signin";
+  const mode: "signin" | "signup" = location.pathname === "/signup" ? "signup" : "signin";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,9 +50,7 @@ const SignUpPage = () => {
 
   return (
     <div className="h-screen w-full bg-gray-950 flex flex-col justify-center items-center">
-      <div
-        className="w-full max-w-sm p-6 rounded-2xl bg-gray-900 border border-gray-700 flex flex-col gap-3"
-      >
+      <div className="w-full max-w-sm p-6 rounded-2xl bg-gray-900 border border-gray-700 flex flex-col gap-3">
         <h1 className="text-white text-2xl font-bold">
           {mode === "signin" ? "Sign In" : "Sign Up"}
         </h1>

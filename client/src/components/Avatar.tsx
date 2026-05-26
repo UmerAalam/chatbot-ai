@@ -29,10 +29,7 @@ const Avatar = () => {
   }, [loading, user]);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropDown(false);
       }
     };
@@ -53,7 +50,7 @@ const Avatar = () => {
   return (
     <div
       onClick={() => setShowDropDown(!showDropdown)}
-      className="absolute cursor-pointer top-5 right-5 bg-white z-10 rounded-full border-2 border-green-400 w-10 h-10"
+      className="fixed cursor-pointer top-5 right-5 bg-white z-50 rounded-full border-2 border-green-400 w-10 h-10 shadow-md"
     >
       {showDropdown && (
         <div

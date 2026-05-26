@@ -29,8 +29,7 @@ export const folderChatsSlice = createSlice({
     },
     renameChatFromFolder: (state, action: PayloadAction<RenameFolderChat>) => {
       return state.map((chat) =>
-        chat.chatId === action.payload.chatId &&
-        chat.folderId === action.payload.folderId
+        chat.chatId === action.payload.chatId && chat.folderId === action.payload.folderId
           ? { ...chat, newName: action.payload.name }
           : chat,
       );

@@ -29,10 +29,7 @@ export const DeleteChatBarChatById = async (id: number) => {
     .returning();
   return res;
 };
-export const UpdateChatBarChat = async (props: {
-  chat_name: string;
-  id: number;
-}) => {
+export const UpdateChatBarChat = async (props: { chat_name: string; id: number }) => {
   const res = await db
     .update(chatbarchatsTable)
     .set({ chat_name: props.chat_name })
@@ -45,10 +42,7 @@ export const UserChatsByEmail = async (email: string) => {
     .select()
     .from(chatbarchatsTable)
     .where(
-      and(
-        eq(chatbarchatsTable.email, email),
-        eq(chatbarchatsTable.folder_id, "DEFAULT"),
-      ),
+      and(eq(chatbarchatsTable.email, email), eq(chatbarchatsTable.folder_id, "DEFAULT")),
     );
   return res;
 };

@@ -43,8 +43,7 @@ export const authClient = {
       return { data: { user: existing, created: false } };
     }
 
-    const resolvedName =
-      input.name?.trim() || email.split("@")[0] || "User";
+    const resolvedName = input.name?.trim() || email.split("@")[0] || "User";
     const nextUser: LocalUser = {
       id: crypto.randomUUID(),
       name: resolvedName,

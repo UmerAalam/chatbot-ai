@@ -5,8 +5,7 @@ function ChatPanel() {
         <h1 className="text-4xl">How can i help you today?</h1>
         <div className="text-lg text-white/80">Ready when you are...</div>
         <div className="text-sm text-white/50 px-5 font-semibold">
-          This AI chatbot can sometimes make mistakes or provide incomplete
-          answers.
+          This AI chatbot can sometimes make mistakes or provide incomplete answers.
         </div>
         <div className="text-sm text-white/50 px-5 -mt-3 font-semibold">
           Always verify important information before relying on it.

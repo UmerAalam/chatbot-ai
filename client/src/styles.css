@@ -26,8 +26,7 @@ body {
 }
 
 code {
-  font-family:
-    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 @theme inline {
@@ -192,15 +191,27 @@ code {
     line-height: 1.25;
   }
 
-  .markdown-body h1 { font-size: 1.35rem; }
-  .markdown-body h2 { font-size: 1.2rem; }
-  .markdown-body h3 { font-size: 1.05rem; }
+  .markdown-body h1 {
+    font-size: 1.35rem;
+  }
+  .markdown-body h2 {
+    font-size: 1.2rem;
+  }
+  .markdown-body h3 {
+    font-size: 1.05rem;
+  }
 
   .markdown-body p,
   .markdown-body ul,
   .markdown-body ol,
   .markdown-body blockquote {
     margin: 0.5rem 0;
+    max-width: 100%;
+  }
+
+  .markdown-body p {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
   }
 
   .markdown-body ul,

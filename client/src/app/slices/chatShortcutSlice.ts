@@ -29,9 +29,7 @@ export const chatShortcutsSlice = createSlice({
     },
     renameChat: (state, action: PayloadAction<Rename>) => {
       return state.map((chat) =>
-        chat.id === action.payload.chatId
-          ? { ...chat, name: action.payload.name }
-          : chat,
+        chat.id === action.payload.chatId ? { ...chat, name: action.payload.name } : chat,
       );
     },
   },

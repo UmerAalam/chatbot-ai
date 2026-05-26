@@ -39,14 +39,8 @@ export const chatbarRoute = new Hono()
     const res = await UserChatsByEmail(email!);
     return c.json(res, 200);
   })
-  .get(
-    "/folderID",
-    zValidator("query", userChatsByFolderIDSchema),
-    async (c) => {
-      const folder_id = c.req.query("folder_id");
-      const res: ChatBarChat[] = await UserChatsByFolderID(
-        folder_id?.toString()!,
-      );
-      return c.json(res, 200);
-    },
-  );
+  .get("/folderID", zValidator("query", userChatsByFolderIDSchema), async (c) => {
+    const folder_id = c.req.query("folder_id");
+    const res: ChatBarChat[] = await UserChatsByFolderID(folder_id?.toString()!);
+    return c.json(res, 200);
+  });

@@ -84,9 +84,7 @@ function ChatsBar({ handleBtn, disabled = false, ...rest }: Props) {
         <AddAlert
           isChat={true}
           cancelBtn={handleCancel}
-          addBtn={(name) =>
-            handleChatSubmitByFolderID({ text: name.toString() })
-          }
+          addBtn={(name) => handleChatSubmitByFolderID({ text: name.toString() })}
         />
       )}
       <div

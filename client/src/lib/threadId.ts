@@ -31,10 +31,7 @@ export const getThreadIdForChatbar = (chatbarNumericId: number) => {
   return map[key];
 };
 
-export const setThreadIdForChatbar = (
-  chatbarNumericId: number,
-  threadId: string,
-) => {
+export const setThreadIdForChatbar = (chatbarNumericId: number, threadId: string) => {
   const map = loadMap();
   map[String(chatbarNumericId)] = threadId;
   saveMap(map);

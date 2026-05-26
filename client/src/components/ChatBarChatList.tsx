@@ -36,7 +36,11 @@ const ChatBarChatList = ({ searchTerm }: Props) => {
     <div className="w-full">
       {items.map((chat) => (
         <div key={chat.id} className="w-full py-1.5 h-auto">
-          <ChatShortcut id={chat.id} threadId={chat.id ? getThreadIdForChatbar(chat.id) : undefined} name={chat.chat_name} />
+          <ChatShortcut
+            id={chat.id}
+            threadId={chat.id ? getThreadIdForChatbar(chat.id) : undefined}
+            name={chat.chat_name}
+          />
         </div>
       ))}
     </div>

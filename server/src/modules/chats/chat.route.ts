@@ -1,11 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { supabase } from "../../server";
-import {
-  chatsByChatBarChatIDSchema,
-  chatSchema,
-  deleteChatSchema,
-} from "./chat.dto";
+import { chatsByChatBarChatIDSchema, chatSchema, deleteChatSchema } from "./chat.dto";
 import "dotenv/config";
 import { AddChat, UserChatsByChatbarID } from "./chat.service";
 import { DeleteChatsByChatbarId } from "../chatbar/chatbar.service";

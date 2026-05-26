@@ -57,9 +57,7 @@ const formatLanguageLabel = (className?: string): string => {
 
 function MarkdownRenderer(props: { text?: string }) {
   const unwrapped = unwrapMarkdownFence(props.text || "");
-  const source = hasMarkdownSyntax(unwrapped)
-    ? unwrapped
-    : formatPlainText(unwrapped);
+  const source = hasMarkdownSyntax(unwrapped) ? unwrapped : formatPlainText(unwrapped);
 
   return (
     <div className="markdown-body">

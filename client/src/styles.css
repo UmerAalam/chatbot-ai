@@ -175,6 +175,7 @@ code {
     color: #c9d1d9;
     line-height: 1.6;
     font-size: 0.95rem;
+    font-weight: 600;
     overflow-wrap: anywhere;
     word-break: break-word;
   }
@@ -230,6 +231,7 @@ code {
     border-radius: 6px;
     padding: 0.1rem 0.35rem;
     color: #e6edf3;
+    font-weight: 500;
   }
 
   .md-code-wrap {
@@ -278,6 +280,7 @@ code {
     line-height: 1.5;
     color: #e6edf3;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 500;
     scrollbar-width: thin;
     scrollbar-color: #30363d #0d1117;
   }

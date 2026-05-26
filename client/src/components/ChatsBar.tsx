@@ -89,21 +89,21 @@ function ChatsBar({ handleBtn, disabled = false, ...rest }: Props) {
       )}
       <div
         {...rest}
-        className="fixed left-0 top-0 w-1.4 overflow-y-scroll overflow-x-hidden px-3 h-screen bg-transparent
+        className="fixed left-0 top-0 w-[360px] max-w-[85vw] overflow-y-auto overflow-x-hidden px-3 py-3 h-screen bg-transparent
         [&::-webkit-scrollbar]:w-2
-        [&::-webkit-scrollbar-track]:bg-gray-700/20
+        [&::-webkit-scrollbar-track]:bg-transparent
         [&::-webkit-scrollbar-track]:rounded-2xl
-        [&::-webkit-scrollbar-thumb]:bg-gray-700/50
+        [&::-webkit-scrollbar-thumb]:bg-gray-700/60
         [&::-webkit-scrollbar-thumb]:rounded-2xl
         [&::-webkit-scrollbar-track]:mt-2"
       >
-        <div className="flex justify-between gap-3 px-4.5 items-center mt-5 w-full h-12 rounded-2xl bg-gray-700/20 backdrop-blur-2xl">
+        <div className="flex justify-between gap-3 px-4.5 items-center mt-1 w-full h-12 rounded-2xl bg-gray-700/20 border border-gray-700/50 backdrop-blur-2xl">
           <div className="flex items-center gap-3">
             <Button
               onClick={handleBtn}
               disabled={disabled}
               id="arrow-Btn"
-              className={`bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full size-8 backdrop-blur-2xl`}
+              className="bg-gray-800 border border-gray-700 hover:bg-gray-700 rounded-full size-8 backdrop-blur-2xl"
             >
               <FaArrowLeft className="text-white/80 w-fit" />
             </Button>
@@ -111,7 +111,7 @@ function ChatsBar({ handleBtn, disabled = false, ...rest }: Props) {
             <div className="text-white/80 font-bold">My Chats</div>
           </div>
         </div>
-        <div className="flex flex-col py-5 justify-start gap-3 px-3 items-start mt-5 w-full h-[87%] rounded-2xl bg-gray-700/20 backdrop-blur-2xl">
+        <div className="flex flex-col py-4 justify-start gap-3 px-3 items-start mt-3 w-full min-h-[calc(100vh-118px)] rounded-2xl bg-gray-700/20 border border-gray-700/50 backdrop-blur-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
           <ChatBarSearch searchHandle={handleSearch} />
           <div className="text-white w-full px-2.5 flex justify-between items-center mt-3 font-semibold">
             {showChatFolder ? (
@@ -167,7 +167,6 @@ function ChatsBar({ handleBtn, disabled = false, ...rest }: Props) {
           )}
         </div>
       </div>
-      )
     </>
   );
 }

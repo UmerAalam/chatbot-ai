@@ -26,7 +26,7 @@ export const openaiRoute = new Hono()
           body: JSON.stringify({
             model: ollamaModel || "llama3.2",
             prompt,
-            stream: false,
+            stream: true,
           }),
         });
 
@@ -38,8 +38,58 @@ export const openaiRoute = new Hono()
           });
         }
 
-        const data = (await response.json()) as { response?: string };
-        return c.text(data.response || "");
+        if (!response.body) {
+          return new Response("No stream body from Ollama.", { status: 500 });
+        }
+
+        const decoder = new TextDecoder();
+        const encoder = new TextEncoder();
+        let buffer = "";
+
+        const stream = new ReadableStream<Uint8Array>({
+          async start(controller) {
+            const reader = response.body!.getReader();
+            try {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                  const trimmed = line.trim();
+                  if (!trimmed) continue;
+                  try {
+                    const parsed = JSON.parse(trimmed) as { response?: string };
+                    if (parsed.response) {
+                      controller.enqueue(encoder.encode(parsed.response));
+                    }
+                  } catch {
+                    // ignore malformed partial lines
+                  }
+                }
+              }
+              const tail = buffer.trim();
+              if (tail) {
+                try {
+                  const parsed = JSON.parse(tail) as { response?: string };
+                  if (parsed.response) {
+                    controller.enqueue(encoder.encode(parsed.response));
+                  }
+                } catch {
+                  // ignore malformed tail
+                }
+              }
+            } finally {
+              controller.close();
+            }
+          },
+        });
+
+        return new Response(stream, {
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        });
       }
 
       if (!apiKey) {
@@ -66,14 +116,33 @@ export const openaiRoute = new Hono()
             }
           : {}),
       });
+
       const completion = await openai.responses.create({
         model: isOpenRouter
           ? openrouterModel || "openai/gpt-4o-mini"
           : openaiModel || "gpt-4.1-mini",
         input: prompt,
+        stream: true,
       });
 
-      return c.text(completion.output_text || "");
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          try {
+            for await (const event of completion) {
+              if (event.type === "response.output_text.delta" && event.delta) {
+                controller.enqueue(encoder.encode(event.delta));
+              }
+            }
+          } finally {
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+      });
     } catch (error) {
       const err = error as { message?: string; status?: number };
       return new Response(

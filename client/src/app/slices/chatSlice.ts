@@ -4,7 +4,7 @@ import type { RootState } from "../store/store";
 export interface Chat {
   id?: number;
   text: string;
-  chatbar_id?: number;
+  chatbar_id?: number | string;
   created_at?: string;
   email: string;
   role: string;

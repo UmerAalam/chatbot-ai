@@ -2,6 +2,7 @@ import { useFolders } from "src/query/folder";
 import ChatFolder from "./ChatFolder";
 import { useMemo } from "react";
 import { useAuth } from "src/lib/FetchUser";
+import { Loader2 } from "lucide-react";
 
 interface FolderProps {
   name: string;
@@ -29,7 +30,11 @@ const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
     });
   }, [searchTerm, folders]);
   if (folderLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="w-full flex items-center justify-center py-4">
+        <Loader2 className="h-5 w-5 animate-spin text-white/70" />
+      </div>
+    );
   }
   return (
     <div className="w-full">

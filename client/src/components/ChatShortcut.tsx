@@ -10,10 +10,11 @@ import {
 
 type Props = {
   id?: number;
+  threadId?: string;
   name: string;
 };
 
-function ChatShortcut({ id, name: currentName }: Props) {
+function ChatShortcut({ id, threadId, name: currentName }: Props) {
   const [open, setOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [name, setName] = useState(currentName);
@@ -56,11 +57,11 @@ function ChatShortcut({ id, name: currentName }: Props) {
   };
 
   return (
-    <div className="relative flex items-center text-white/80 font-semibold px-3 w-full h-12 bg-gray-700/50 rounded-2xl border-l-8 border-white outline-2 outline-transparent hover:outline-white">
+    <div className="relative flex items-center text-white/85 font-semibold px-3 w-full h-11 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-colors">
       {open && (
         <div
           ref={menuRef}
-          className="absolute right-0 top-12 bg-gray-800/80 backdrop-blur-2xl text-white/90 rounded-lg shadow-lg border border-gray-700/50 w-40 z-50"
+          className="absolute right-0 top-12 bg-slate-900/90 backdrop-blur-2xl text-white/90 rounded-xl shadow-lg border border-white/10 w-40 z-50"
           onMouseDown={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
           role="menu"
@@ -68,20 +69,20 @@ function ChatShortcut({ id, name: currentName }: Props) {
           <ul className="flex flex-col text-sm">
             <li
               onClick={startRenaming}
-              className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-t-lg"
+              className="px-4 py-2 hover:bg-white/10 cursor-pointer rounded-t-lg"
               role="menuitem"
             >
               Rename
             </li>
             <li
-              className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+              className="px-4 py-2 hover:bg-white/10 cursor-pointer"
               role="menuitem"
             >
               Move
             </li>
             <li
               onClick={handleDelete}
-              className="flex items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-b-lg text-red-400 hover:text-red-300"
+              className="flex items-center px-4 py-2 hover:bg-white/10 cursor-pointer rounded-b-lg text-red-400 hover:text-red-300"
               role="menuitem"
             >
               Delete
@@ -92,7 +93,10 @@ function ChatShortcut({ id, name: currentName }: Props) {
       )}
 
       <div
-        onClick={() => navigate({ to: `/chatpage/${id}` })}
+        onClick={() => {
+          if (!threadId) return;
+          navigate({ to: "/chat/$chatId", params: { chatId: threadId } });
+        }}
         className="select-none w-full h-full flex items-center justify-between"
       >
         {isRenaming ? (

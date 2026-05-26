@@ -13,16 +13,33 @@ import { Chat, useChatCreate, useChatsByChatBarID } from "src/query/chats";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addChatToChats, clearChats, getChats } from "src/app/slices/chatSlice";
 import { useAuth } from "src/lib/FetchUser";
-import { loadSettings } from "src/lib/settings";
+import { AppSettings, loadSettings, saveSettings } from "src/lib/settings";
 import { useNavigate } from "@tanstack/react-router";
 import { client } from "src/lib/client";
+import {
+  generateThreadId,
+  getChatbarIdForThreadId,
+  setThreadIdForChatbar,
+} from "src/lib/threadId";
 
-const pendingPromptKey = (id: number) => `pending-first-prompt-${id}`;
-function ChatPage(props: { chatbar_id?: number }) {
+const pendingPromptKey = (threadId: string) => `pending_prompt_${threadId}`;
+
+const getChatTitleFromPrompt = (prompt: string) => {
+  const words = prompt
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length === 0) return "New Chat";
+  return words.slice(0, 4).join(" ");
+};
+
+function ChatPage(props: { chatbar_id?: string }) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const chatbar_id = props.chatbar_id || 0;
-  const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
+  const chatbar_id = props.chatbar_id || "";
+  const isHomePage = chatbar_id === "";
+  const resolvedChatbarId = isHomePage ? "" : getChatbarIdForThreadId(chatbar_id);
+  const { data: chats } = useChatsByChatBarID(resolvedChatbarId);
   const localChats = useAppSelector(getChats);
   const dispatch = useAppDispatch();
   const createChat = useChatCreate();
@@ -32,6 +49,10 @@ function ChatPage(props: { chatbar_id?: number }) {
   const [text, setText] = useState("");
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
   const handledPendingPrompt = useRef(false);
+  const [settings, setSettings] = useState<AppSettings>(loadSettings());
+  useEffect(() => {
+    setSettings(loadSettings());
+  }, []);
   useEffect(() => {
     if (chats) {
       const sorted = [...chats].sort((a, b) => {
@@ -44,13 +65,13 @@ function ChatPage(props: { chatbar_id?: number }) {
     }
   }, [chats, chatbar_id, props.chatbar_id, dispatch]);
   useEffect(() => {
-    if (!chatbar_id || handledPendingPrompt.current) return;
+    if (isHomePage || handledPendingPrompt.current) return;
     const queued = sessionStorage.getItem(pendingPromptKey(chatbar_id));
     if (!queued || queued.trim().length === 0) return;
     handledPendingPrompt.current = true;
     sessionStorage.removeItem(pendingPromptKey(chatbar_id));
     void handleChatSubmit(queued);
-  }, [chatbar_id]);
+  }, [isHomePage, chatbar_id]);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -60,29 +81,6 @@ function ChatPage(props: { chatbar_id?: number }) {
       ease: "power1",
     });
   }, []);
-  useGSAP(() => {
-    if (isOpen) {
-      gsap.fromTo(
-        "#side-panel",
-        {
-          width: 0,
-        },
-        {
-          width: "30%",
-        },
-      );
-    } else {
-      gsap.fromTo(
-        "#side-panel",
-        {
-          width: "30%",
-        },
-        {
-          width: 0,
-        },
-      );
-    }
-  }, [isOpen]);
   const streamAnswer = async (
     prompt: string,
     onChunk: (s: string) => void,
@@ -130,13 +128,63 @@ function ChatPage(props: { chatbar_id?: number }) {
       setIsOpen(false);
     }
   };
+  const parseModels = (value: string) => {
+    const models = value
+      .split(/[\n,]/)
+      .map((m) => m.trim())
+      .filter(Boolean);
+    return models.length > 0 ? models : [value.trim()].filter(Boolean);
+  };
+  const modelOptions = [
+    ...parseModels(settings.openaiModel).map((model) => ({
+      provider: "openai" as const,
+      model,
+      key: `openai::${model}`,
+      label: `OpenAI - ${model}`,
+    })),
+    ...parseModels(settings.openrouterModel).map((model) => ({
+      provider: "openrouter" as const,
+      model,
+      key: `openrouter::${model}`,
+      label: `OpenRouter - ${model}`,
+    })),
+    ...parseModels(settings.ollamaModel).map((model) => ({
+      provider: "ollama" as const,
+      model,
+      key: `ollama::${model}`,
+      label: `Ollama - ${model}`,
+    })),
+  ];
+  const selectedModel =
+    settings.modelProvider === "openai"
+      ? settings.openaiModel
+      : settings.modelProvider === "openrouter"
+        ? settings.openrouterModel
+        : settings.ollamaModel;
+  const selectedKey = `${settings.modelProvider}::${selectedModel}`;
+  const handleModelChange = (value: string) => {
+    const [provider, model] = value.split("::");
+    const next =
+      provider === "openai"
+        ? { ...settings, modelProvider: "openai" as const, openaiModel: model }
+        : provider === "openrouter"
+          ? {
+              ...settings,
+              modelProvider: "openrouter" as const,
+              openrouterModel: model,
+            }
+          : { ...settings, modelProvider: "ollama" as const, ollamaModel: model };
+    setSettings(next);
+    saveSettings(next);
+  };
   const handleChatSubmit = async (text: string) => {
     const userText = text.trim();
     if (!userText) return;
-    if (chatbar_id === 0) {
+    let targetChatbarId = resolvedChatbarId;
+    if (isHomePage) {
       const res = await client.api.chatbarchat.$post({
         json: {
-          chat_name: userText.slice(0, 50),
+          chat_name: getChatTitleFromPrompt(userText),
           folder_id: "DEFAULT",
           email: user?.email || "",
         },
@@ -149,8 +197,10 @@ function ChatPage(props: { chatbar_id?: number }) {
       if (!first?.id) {
         throw new Error("Failed to open chat");
       }
-      sessionStorage.setItem(pendingPromptKey(first.id), userText);
-      navigate({ to: "/chatpage/$pageId", params: { pageId: String(first.id) } });
+      const threadId = generateThreadId();
+      setThreadIdForChatbar(first.id, threadId);
+      sessionStorage.setItem(pendingPromptKey(threadId), userText);
+      navigate({ to: "/chat/$chatId", params: { chatId: threadId } });
       return;
     }
     let role: "user" | "assistant" = "user"; // default role
@@ -161,7 +211,7 @@ function ChatPage(props: { chatbar_id?: number }) {
     dispatch(
       addChatToChats({
         text: userText,
-        chatbar_id,
+        chatbar_id: targetChatbarId,
         email: user?.email || "",
         role,
       }),
@@ -169,7 +219,9 @@ function ChatPage(props: { chatbar_id?: number }) {
     setText("");
     await createChat({
       text: userText,
-      chatbar_id: chatbar_id.toString(),
+      chatbar_id: String(
+        isHomePage ? getChatbarIdForThreadId(targetChatbarId) : targetChatbarId,
+      ),
       email: user?.email,
       role: "user",
     });
@@ -180,7 +232,7 @@ function ChatPage(props: { chatbar_id?: number }) {
       dispatch(
         addChatToChats({
           text: final,
-          chatbar_id,
+          chatbar_id: targetChatbarId,
           email: user?.email || "",
           role: "assistant",
         }),
@@ -188,7 +240,9 @@ function ChatPage(props: { chatbar_id?: number }) {
       setText("");
       await createChat({
         text: final,
-        chatbar_id: chatbar_id.toString(),
+        chatbar_id: String(
+          isHomePage ? getChatbarIdForThreadId(targetChatbarId) : targetChatbarId,
+        ),
         email: user?.email,
         role: "assistant",
       });
@@ -199,7 +253,7 @@ function ChatPage(props: { chatbar_id?: number }) {
       dispatch(
         addChatToChats({
           text: message,
-          chatbar_id,
+          chatbar_id: targetChatbarId,
           email: user?.email || "",
           role: "assistant",
         }),
@@ -250,26 +304,24 @@ function ChatPage(props: { chatbar_id?: number }) {
   });
   return (
     <>
-      <div className="flex">
-        <div id="side-panel" className="flex bg-black w-2/5">
-          <aside
-            ref={panelRef}
-            id="chat-panel"
-            aria-hidden={!isOpen}
-            className={`fixed left-0 top-0 w-full ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
-          >
-            <ChatsBar handleBtn={handleChatPanel} disabled={!isOpen} />
-          </aside>
-        </div>
-        <div className="w-full flex flex-row h-full min-h-screen bg-black relative">
+      <div className="flex bg-black min-h-screen">
+        <aside
+          ref={panelRef}
+          id="chat-panel"
+          aria-hidden={!isOpen}
+          className={`fixed left-0 top-0 z-40 h-screen ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+        >
+          <ChatsBar handleBtn={handleChatPanel} disabled={!isOpen} />
+        </aside>
+        <div
+          className={`w-full flex flex-row h-full min-h-screen bg-black relative transition-[margin] duration-300 ${isOpen ? "ml-[360px]" : "ml-12"}`}
+        >
           <div>
             <Avatar />
           </div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.4),_transparent_40%)]"></div>
           <div className="flex flex-col gap-3 justify-center items-center w-full h-full">
-            <div
-              className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
-            >
+            <div className="w-full px-12 md:px-20 lg:px-50 flex flex-col gap-5 mt-20 justify-end">
               {initialChats.length > 0 && renderChatSections}
               {localChat}
               {text !== "" && (
@@ -282,19 +334,36 @@ function ChatPage(props: { chatbar_id?: number }) {
               <div
                 className={`flex justify-center items-center w-full mt-10 ${chats && chats.length > 0 && "mb-20"}`}
               >
-                <SearchBar searchBtn={(prompt) => handleChatSubmit(prompt)} />
+                <div className="w-full flex flex-col items-center gap-2">
+                  <SearchBar searchBtn={(prompt) => handleChatSubmit(prompt)} />
+                  <div className="w-[40%] flex justify-end">
+                    <select
+                      value={selectedKey}
+                      onChange={(e) => handleModelChange(e.target.value)}
+                      className="h-9 px-3 rounded-xl bg-gray-700/30 backdrop-blur-sm border border-gray-700/40 text-white text-sm"
+                    >
+                      {modelOptions.map((option) => (
+                        <option key={option.key} value={option.key}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
               {chats?.length === 0 && <ChatPanel />}
             </div>
           </div>
           {!isOpen && (
-            <Button
-              onClick={handleChatPanel}
-              id="arrow-Btn"
-              className="fixed top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl"
-            >
-              <FaArrowRight className="text-white/80" />
-            </Button>
+            <div className="fixed top-0 left-0 z-30 h-screen w-12 bg-slate-950/95 backdrop-blur-md border-r border-white/10">
+              <Button
+                onClick={handleChatPanel}
+                id="arrow-Btn"
+                className="absolute top-5 left-2 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl"
+              >
+                <FaArrowRight className="text-white/80" />
+              </Button>
+            </div>
           )}
         </div>
       </div>

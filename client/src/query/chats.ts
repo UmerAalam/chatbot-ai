@@ -4,7 +4,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
 import { client } from "src/lib/client";
 
 export interface Chat {
@@ -17,19 +16,14 @@ export interface Chat {
 }
 export const useChatCreate = () => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const { mutateAsync } = useMutation({
     mutationFn: async (chat: Chat) => {
-      const user = await useAuth();
-      if (!user) {
-        return navigate({ to: "/" });
-      }
       const res = await client.api.chats.$post({
         json: {
           chatbar_id: chat.chatbar_id,
           text: chat.text,
           role: chat.role,
-          email: (user && user.email) || "",
+          email: chat.email || "",
         },
       });
       if (!res.ok) throw new Error("Error while posting chat");

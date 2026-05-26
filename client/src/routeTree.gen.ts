@@ -15,6 +15,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatpageIndexRouteImport } from './routes/chatpage/index'
 import { Route as ChatpagePageIdRouteImport } from './routes/chatpage/$pageId'
+import { Route as ChatChatIdRouteImport } from './routes/chat/$chatId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -46,12 +47,18 @@ const ChatpagePageIdRoute = ChatpagePageIdRouteImport.update({
   path: '/chatpage/$pageId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatChatIdRoute = ChatChatIdRouteImport.update({
+  id: '/chat/$chatId',
+  path: '/chat/$chatId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/chat/$chatId': typeof ChatChatIdRoute
   '/chatpage/$pageId': typeof ChatpagePageIdRoute
   '/chatpage/': typeof ChatpageIndexRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/chat/$chatId': typeof ChatChatIdRoute
   '/chatpage/$pageId': typeof ChatpagePageIdRoute
   '/chatpage': typeof ChatpageIndexRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/chat/$chatId': typeof ChatChatIdRoute
   '/chatpage/$pageId': typeof ChatpagePageIdRoute
   '/chatpage/': typeof ChatpageIndexRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signin'
     | '/signup'
+    | '/chat/$chatId'
     | '/chatpage/$pageId'
     | '/chatpage/'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signin'
     | '/signup'
+    | '/chat/$chatId'
     | '/chatpage/$pageId'
     | '/chatpage'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signin'
     | '/signup'
+    | '/chat/$chatId'
     | '/chatpage/$pageId'
     | '/chatpage/'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  ChatChatIdRoute: typeof ChatChatIdRoute
   ChatpagePageIdRoute: typeof ChatpagePageIdRoute
   ChatpageIndexRoute: typeof ChatpageIndexRoute
 }
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatpagePageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat/$chatId': {
+      id: '/chat/$chatId'
+      path: '/chat/$chatId'
+      fullPath: '/chat/$chatId'
+      preLoaderRoute: typeof ChatChatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  ChatChatIdRoute: ChatChatIdRoute,
   ChatpagePageIdRoute: ChatpagePageIdRoute,
   ChatpageIndexRoute: ChatpageIndexRoute,
 }

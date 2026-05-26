@@ -16,8 +16,10 @@ function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex justify-center px-4 py-10">
-      <div className="w-full max-w-2xl bg-gray-900/80 border border-gray-700 rounded-2xl p-6 flex flex-col gap-4">
+    <div className="min-h-screen bg-black text-white flex justify-center px-4 py-10 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.35),_transparent_40%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(59,130,246,0.18),_transparent_45%)]" />
+      <div className="relative w-full max-w-2xl bg-gray-700/20 backdrop-blur-2xl border border-gray-700/50 rounded-2xl p-6 flex flex-col gap-4 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
         <h1 className="text-2xl font-bold">Settings</h1>
         <label className="text-sm text-gray-200">Model Provider</label>
         <select
@@ -88,13 +90,13 @@ function SettingsPage() {
         <div className="flex gap-3 pt-2">
           <button
             onClick={() => navigate({ to: "/chatpage" })}
-            className="h-11 px-4 rounded-lg border border-gray-600"
+            className="h-11 px-5 rounded-2xl bg-white text-gray-800 hover:bg-red-500 hover:text-white border-2 border-transparent hover:border-white font-bold"
           >
             Cancel
           </button>
           <button
             onClick={onSave}
-            className="h-11 px-4 rounded-lg bg-green-600 hover:bg-green-500 font-semibold"
+            className="h-11 px-5 rounded-2xl bg-green-400 text-green-900 hover:text-white border-2 border-transparent hover:border-white font-bold"
           >
             Save
           </button>

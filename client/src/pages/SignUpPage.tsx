@@ -81,7 +81,7 @@ const SignUpPage = () => {
         {info ? <p className="text-sm text-green-400">{info}</p> : null}
         <button
           onClick={handleSubmit}
-          className="h-11 mt-1 rounded-lg bg-green-600 hover:bg-green-500 text-white font-semibold cursor-pointer"
+          className="h-11 mt-1 rounded-2xl bg-green-400 text-green-900 hover:text-white border-2 border-transparent hover:border-white font-bold cursor-pointer"
         >
           {mode === "signin" ? "Sign In" : "Create Account"}
         </button>
@@ -91,7 +91,7 @@ const SignUpPage = () => {
             setInfo("");
             navigate({ to: mode === "signin" ? "/signup" : "/signin" });
           }}
-          className="h-11 rounded-lg border border-gray-600 text-gray-200 hover:bg-gray-800 cursor-pointer"
+          className="h-11 rounded-2xl bg-white text-gray-800 hover:bg-red-500 hover:text-white border-2 border-transparent hover:border-white font-bold cursor-pointer"
         >
           {mode === "signin" ? "Need an account? Sign Up" : "Have an account? Sign In"}
         </button>

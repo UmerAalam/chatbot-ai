@@ -2,6 +2,8 @@ import { useUserChatBarChats } from "src/query/chatbarchat";
 import ChatShortcut from "./ChatShortcut";
 import { useMemo } from "react";
 import { useAuth } from "src/lib/FetchUser";
+import { getThreadIdForChatbar } from "src/lib/threadId";
+import { Loader2 } from "lucide-react";
 
 interface Props {
   searchTerm: string;
@@ -24,13 +26,17 @@ const ChatBarChatList = ({ searchTerm }: Props) => {
     });
   }, [searchTerm, chatbarchats]);
   if (isLoading) {
-    return <div>Loading</div>;
+    return (
+      <div className="w-full flex items-center justify-center py-4">
+        <Loader2 className="h-5 w-5 animate-spin text-white/70" />
+      </div>
+    );
   }
   return (
     <div className="w-full">
       {items.map((chat) => (
         <div key={chat.id} className="w-full py-1.5 h-auto">
-          <ChatShortcut id={chat.id} name={chat.chat_name} />
+          <ChatShortcut id={chat.id} threadId={chat.id ? getThreadIdForChatbar(chat.id) : undefined} name={chat.chat_name} />
         </div>
       ))}
     </div>

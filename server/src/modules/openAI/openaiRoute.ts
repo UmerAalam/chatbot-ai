@@ -18,6 +18,13 @@ export const openaiRoute = new Hono()
     } = c.req.valid("json");
 
     try {
+      const responseGuidelines = [
+        "Write clean, readable answers.",
+        "When you include code, use fenced code blocks with the correct language tag.",
+        "In code, use descriptive variable names and never output placeholder values like [object Object].",
+      ].join("\n");
+      const modelInput = `${responseGuidelines}\n\nUser request:\n${prompt}`;
+
       if (modelProvider === "ollama") {
         const baseUrl = (ollamaUrl || "http://localhost:11434").replace(/\/+$/, "");
         const response = await fetch(`${baseUrl}/api/generate`, {
@@ -25,7 +32,7 @@ export const openaiRoute = new Hono()
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model: ollamaModel || "llama3.2",
-            prompt,
+            prompt: modelInput,
             stream: true,
           }),
         });
@@ -121,7 +128,7 @@ export const openaiRoute = new Hono()
         model: isOpenRouter
           ? openrouterModel || "openai/gpt-4o-mini"
           : openaiModel || "gpt-4.1-mini",
-        input: prompt,
+        input: modelInput,
         stream: true,
       });
 

@@ -80,6 +80,7 @@ function ChatPage(props: { chatbar_id?: string }) {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
+  const [showMoveToTop, setShowMoveToTop] = useState(false);
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
   const handledPendingPromptFor = useRef<string | null>(null);
   const [settings, setSettings] = useState<AppSettings>(loadSettings());
@@ -112,6 +113,14 @@ function ChatPage(props: { chatbar_id?: string }) {
     sessionStorage.removeItem(pendingPromptKey(chatbar_id));
     void handleChatSubmit(queued);
   }, [isHomePage, chatbar_id, loading, user?.email]);
+  useEffect(() => {
+    const onScroll = () => {
+      setShowMoveToTop(window.scrollY > 300);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -365,6 +374,9 @@ function ChatPage(props: { chatbar_id?: string }) {
     });
   const hasRenderedChats =
     initialChats.length > 0 || localChat.length > 0 || text.trim().length > 0;
+  const handleMoveToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   return (
     <>
       <div className="flex bg-black min-h-screen">
@@ -427,6 +439,15 @@ function ChatPage(props: { chatbar_id?: string }) {
                 <FaArrowRight className="text-white/80" />
               </Button>
             </div>
+          )}
+          {showMoveToTop && (
+            <Button
+              onClick={handleMoveToTop}
+              className="fixed bottom-6 right-6 z-40 rounded-full h-11 w-11 bg-slate-900/90 border border-white/20 hover:bg-slate-800 text-white shadow-lg"
+              aria-label="Move to top"
+            >
+              ↑
+            </Button>
           )}
         </div>
       </div>

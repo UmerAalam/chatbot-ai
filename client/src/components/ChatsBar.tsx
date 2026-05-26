@@ -3,6 +3,7 @@ import { IoMdAdd } from "react-icons/io";
 import { HTMLAttributes, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowLeft } from "react-icons/fa";
+import { useNavigate } from "@tanstack/react-router";
 import AddAlert from "./AddAlert";
 import FolderChats from "./FolderChats";
 import { useChatBarChatCreate } from "src/query/chatbarchat";
@@ -15,6 +16,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   disabled?: boolean;
 }
 function ChatsBar({ handleBtn, disabled = false, ...rest }: Props) {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const { user } = useAuth();
   const { mutate: createChat } = useChatBarChatCreate();
@@ -110,6 +112,13 @@ function ChatsBar({ handleBtn, disabled = false, ...rest }: Props) {
             <div className="h-6 w-px bg-gray-500/50" />
             <div className="text-white/80 font-bold">My Chats</div>
           </div>
+          <Button
+            disabled={disabled}
+            onClick={() => navigate({ to: "/" })}
+            className="bg-gray-800 border border-gray-700 hover:bg-gray-700 text-white/80 rounded-full h-8 px-3 text-xs font-semibold"
+          >
+            New Chat
+          </Button>
         </div>
         <div className="flex flex-col py-4 justify-start gap-3 px-3 items-start mt-3 w-full min-h-[calc(100vh-118px)] rounded-2xl bg-gray-700/20 border border-gray-700/50 backdrop-blur-2xl shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
           <ChatBarSearch searchHandle={handleSearch} />

@@ -33,8 +33,41 @@ const getChatTitleFromPrompt = (prompt: string) => {
   return words.slice(0, 4).join(" ");
 };
 
+const isAssistantWarningMessage = (text: string) =>
+  /(api key is required|failed to|get assistant response|request failed|no body|session is still loading)/i.test(
+    text.trim(),
+  );
+
+const hideResolvedAssistantWarnings = <T extends { role: string; text: string }>(
+  chats: T[],
+  modelProvider?: AppSettings["modelProvider"],
+) => {
+  let hasLaterSuccessfulAssistant = false;
+  const kept: T[] = [];
+
+  for (let i = chats.length - 1; i >= 0; i -= 1) {
+    const chat = chats[i];
+    if (chat.role === "assistant") {
+      const isWarning = isAssistantWarningMessage(chat.text);
+      const isApiKeyWarning = /api key is required/i.test(chat.text.trim());
+      if (isApiKeyWarning && modelProvider === "ollama") {
+        continue;
+      }
+      if (isWarning && hasLaterSuccessfulAssistant) {
+        continue;
+      }
+      if (!isWarning) {
+        hasLaterSuccessfulAssistant = true;
+      }
+    }
+    kept.push(chat);
+  }
+
+  return kept.reverse();
+};
+
 function ChatPage(props: { chatbar_id?: string }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const chatbar_id = props.chatbar_id || "";
   const isHomePage = chatbar_id === "";
@@ -48,30 +81,37 @@ function ChatPage(props: { chatbar_id?: string }) {
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
-  const handledPendingPrompt = useRef(false);
+  const handledPendingPromptFor = useRef<string | null>(null);
   const [settings, setSettings] = useState<AppSettings>(loadSettings());
   useEffect(() => {
     setSettings(loadSettings());
   }, []);
   useEffect(() => {
-    if (chats) {
-      const sorted = [...chats].sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return dateA - dateB;
-      });
-      dispatch(clearChats());
-      setInitialChats(sorted);
-    }
-  }, [chats, chatbar_id, props.chatbar_id, dispatch]);
+    // Only reset optimistic state when thread changes.
+    dispatch(clearChats());
+    setInitialChats([]);
+    handledPendingPromptFor.current = null;
+  }, [chatbar_id, dispatch]);
+
   useEffect(() => {
-    if (isHomePage || handledPendingPrompt.current) return;
+    if (!chats) return;
+    const sorted = [...chats].sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateA - dateB;
+    });
+    setInitialChats(sorted);
+  }, [chats]);
+  useEffect(() => {
+    if (isHomePage) return;
+    if (loading || !user?.email) return;
+    if (handledPendingPromptFor.current === chatbar_id) return;
     const queued = sessionStorage.getItem(pendingPromptKey(chatbar_id));
     if (!queued || queued.trim().length === 0) return;
-    handledPendingPrompt.current = true;
+    handledPendingPromptFor.current = chatbar_id;
     sessionStorage.removeItem(pendingPromptKey(chatbar_id));
     void handleChatSubmit(queued);
-  }, [isHomePage, chatbar_id]);
+  }, [isHomePage, chatbar_id, loading, user?.email]);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -180,6 +220,17 @@ function ChatPage(props: { chatbar_id?: string }) {
   const handleChatSubmit = async (text: string) => {
     const userText = text.trim();
     if (!userText) return;
+    if (loading || !user?.email) {
+      dispatch(
+        addChatToChats({
+          text: "Session is still loading. Please try again in a moment.",
+          chatbar_id: resolvedChatbarId,
+          email: "",
+          role: "assistant",
+        }),
+      );
+      return;
+    }
     let targetChatbarId = resolvedChatbarId;
     if (isHomePage) {
       const res = await client.api.chatbarchat.$post({
@@ -203,17 +254,12 @@ function ChatPage(props: { chatbar_id?: string }) {
       navigate({ to: "/chat/$chatId", params: { chatId: threadId } });
       return;
     }
-    let role: "user" | "assistant" = "user"; // default role
-    if (localChats.length > 0) {
-      const last = localChats[localChats.length - 1];
-      role = last.role === "user" ? "assistant" : "user";
-    }
     dispatch(
       addChatToChats({
         text: userText,
         chatbar_id: targetChatbarId,
         email: user?.email || "",
-        role,
+        role: "user",
       }),
     );
     setText("");
@@ -268,7 +314,11 @@ function ChatPage(props: { chatbar_id?: string }) {
       return dateA - dateB;
     });
   }, [props.chatbar_id, initialChats]);
-  const renderChatSections = items.map((chat) => {
+  const visibleItems = useMemo(
+    () => hideResolvedAssistantWarnings(items, settings.modelProvider),
+    [items, settings.modelProvider],
+  );
+  const renderChatSections = visibleItems.map((chat) => {
     const isPrompt = chat.role === "user";
     const key = chat.id ?? `${chat.created_at}-${chat.role}`;
     return (
@@ -285,12 +335,23 @@ function ChatPage(props: { chatbar_id?: string }) {
       </div>
     );
   });
-  const localChat = localChats.map((chat) => {
-    const isPrompt = chat.role === "user";
-    const key = chat.id ?? `${chat.created_at}-${chat.role}`;
-    return (
-      <div key={key} className="flex flex-col gap-2 w-auto h-auto">
-        {isPrompt ? (
+  const localVisibleChats = hideResolvedAssistantWarnings(
+    localChats
+    .filter((chat) => String(chat.chatbar_id ?? "") === String(resolvedChatbarId))
+    .filter((chat) => {
+      // Hide optimistic entries once the same persisted message exists.
+      return !initialChats.some(
+        (saved) => saved.role === chat.role && saved.text === chat.text,
+      );
+    }),
+    settings.modelProvider,
+  );
+  const localChat = localVisibleChats.map((chat) => {
+      const isPrompt = chat.role === "user";
+      const key = chat.id ?? `${chat.created_at}-${chat.role}`;
+      return (
+        <div key={key} className="flex flex-col gap-2 w-auto h-auto">
+          {isPrompt ? (
           <div className="flex justify-end">
             <PromptSection prompt={chat.text} />
           </div>
@@ -301,7 +362,9 @@ function ChatPage(props: { chatbar_id?: string }) {
         )}
       </div>
     );
-  });
+    });
+  const hasRenderedChats =
+    initialChats.length > 0 || localChat.length > 0 || text.trim().length > 0;
   return (
     <>
       <div className="flex bg-black min-h-screen">
@@ -340,7 +403,7 @@ function ChatPage(props: { chatbar_id?: string }) {
                     <select
                       value={selectedKey}
                       onChange={(e) => handleModelChange(e.target.value)}
-                      className="h-9 px-3 rounded-xl bg-gray-700/30 backdrop-blur-sm border border-gray-700/40 text-white text-sm"
+                      className="theme-select h-9 rounded-xl bg-[#041321]/90 backdrop-blur-sm border border-emerald-500/55 text-white text-sm shadow-[0_0_0_1px_rgba(16,185,129,0.20)] hover:border-emerald-400/70 focus:border-emerald-300/80 focus:outline-none"
                     >
                       {modelOptions.map((option) => (
                         <option key={option.key} value={option.key}>
@@ -351,7 +414,7 @@ function ChatPage(props: { chatbar_id?: string }) {
                   </div>
                 </div>
               </div>
-              {chats?.length === 0 && <ChatPanel />}
+              {!hasRenderedChats && <ChatPanel />}
             </div>
           </div>
           {!isOpen && (

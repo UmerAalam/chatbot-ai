@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { Eye, EyeOff } from "lucide-react";
 import { AppSettings, loadSettings, saveSettings } from "src/lib/settings";
 
 function SettingsPage() {
   const navigate = useNavigate();
   const [settings, setSettings] = useState<AppSettings>(loadSettings());
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showDatabaseUrl, setShowDatabaseUrl] = useState(false);
 
   useEffect(() => {
     setSettings(loadSettings());
@@ -30,7 +33,7 @@ function SettingsPage() {
               modelProvider: e.target.value as "openai" | "openrouter" | "ollama",
             })
           }
-          className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
+          className="theme-select h-11 rounded-lg bg-gray-800 border border-gray-700 text-white"
         >
           <option value="ollama">Ollama (Local)</option>
           <option value="openai">OpenAI</option>
@@ -39,19 +42,41 @@ function SettingsPage() {
         <label className="text-sm text-gray-200">
           API Key (OpenAI/OpenRouter)
         </label>
-        <input
-          value={settings.apiKey}
-          onChange={(e) => setSettings({ ...settings, apiKey: e.target.value })}
-          placeholder="sk-..."
-          className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
-        />
+        <div className="relative">
+          <input
+            type={showApiKey ? "text" : "password"}
+            value={settings.apiKey}
+            onChange={(e) => setSettings({ ...settings, apiKey: e.target.value })}
+            placeholder="sk-..."
+            className="h-11 w-full rounded-lg px-3 pr-10 bg-gray-800 border border-gray-700"
+          />
+          <button
+            type="button"
+            onClick={() => setShowApiKey((prev) => !prev)}
+            aria-label={showApiKey ? "Hide API key" : "Show API key"}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white"
+          >
+            {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
         <label className="text-sm text-gray-200">Database URL</label>
-        <input
-          value={settings.databaseUrl}
-          onChange={(e) => setSettings({ ...settings, databaseUrl: e.target.value })}
-          placeholder="postgresql://..."
-          className="h-11 rounded-lg px-3 bg-gray-800 border border-gray-700"
-        />
+        <div className="relative">
+          <input
+            type={showDatabaseUrl ? "text" : "password"}
+            value={settings.databaseUrl}
+            onChange={(e) => setSettings({ ...settings, databaseUrl: e.target.value })}
+            placeholder="postgresql://..."
+            className="h-11 w-full rounded-lg px-3 pr-10 bg-gray-800 border border-gray-700"
+          />
+          <button
+            type="button"
+            onClick={() => setShowDatabaseUrl((prev) => !prev)}
+            aria-label={showDatabaseUrl ? "Hide database URL" : "Show database URL"}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white"
+          >
+            {showDatabaseUrl ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
         <label className="text-sm text-gray-200">Ollama Base URL</label>
         <input
           value={settings.ollamaUrl}

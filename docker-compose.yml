@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:17
+    container_name: chatbot-ai-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: chatbot_ai
+      POSTGRES_USER: chatbot_user
+      POSTGRES_PASSWORD: chatbot_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chatbot_user -d chatbot_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    image: node:20-bookworm
+    container_name: chatbot-ai-server
+    working_dir: /app
+    command: >
+      sh -c "corepack enable && pnpm install && pnpm --filter server dev"
+    environment:
+      DATABASE_URL: postgresql://chatbot_user:chatbot_password@db:5432/chatbot_ai
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-secret-change-me}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - root_node_modules:/app/node_modules
+      - server_node_modules:/app/server/node_modules
+
+  client:
+    image: node:20-bookworm
+    container_name: chatbot-ai-client
+    working_dir: /app
+    command: >
+      sh -c "corepack enable && pnpm install && pnpm --filter client dev --host 0.0.0.0"
+    depends_on:
+      - server
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - root_node_modules:/app/node_modules
+      - client_node_modules:/app/client/node_modules
+
+volumes:
+  postgres_data:
+  root_node_modules:
+  server_node_modules:
+  client_node_modules:

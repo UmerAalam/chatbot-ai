@@ -13,10 +13,65 @@ import { Chat, useChatCreate, useChatsByChatBarID } from "src/query/chats";
 import { useAppDispatch, useAppSelector } from "src/app/hooks/hook";
 import { addChatToChats, clearChats, getChats } from "src/app/slices/chatSlice";
 import { useAuth } from "src/lib/FetchUser";
-function ChatPage(props: { chatbar_id?: number }) {
-  const { user } = useAuth();
-  const chatbar_id = props.chatbar_id || 0;
-  const { data: chats } = useChatsByChatBarID(chatbar_id.toString());
+import { AppSettings, loadSettings, saveSettings } from "src/lib/settings";
+import { useNavigate } from "@tanstack/react-router";
+import { client } from "src/lib/client";
+import {
+  generateThreadId,
+  getChatbarIdForThreadId,
+  setThreadIdForChatbar,
+} from "src/lib/threadId";
+
+const pendingPromptKey = (threadId: string) => `pending_prompt_${threadId}`;
+const TEMP_CHAT_ID = "TEMP_SESSION_CHAT";
+const TEMP_CHAT_MODE_KEY = "temp_chat_mode";
+
+const getChatTitleFromPrompt = (prompt: string) => {
+  const words = prompt.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "New Chat";
+  return words.slice(0, 4).join(" ");
+};
+
+const isAssistantWarningMessage = (text: string) =>
+  /(api key is required|failed to|get assistant response|request failed|no body|session is still loading)/i.test(
+    text.trim(),
+  );
+
+const hideResolvedAssistantWarnings = <T extends { role: string; text: string }>(
+  chats: T[],
+  modelProvider?: AppSettings["modelProvider"],
+) => {
+  let hasLaterSuccessfulAssistant = false;
+  const kept: T[] = [];
+
+  for (let i = chats.length - 1; i >= 0; i -= 1) {
+    const chat = chats[i];
+    if (chat.role === "assistant") {
+      const isWarning = isAssistantWarningMessage(chat.text);
+      const isApiKeyWarning = /api key is required/i.test(chat.text.trim());
+      if (isApiKeyWarning && modelProvider === "ollama") {
+        continue;
+      }
+      if (isWarning && hasLaterSuccessfulAssistant) {
+        continue;
+      }
+      if (!isWarning) {
+        hasLaterSuccessfulAssistant = true;
+      }
+    }
+    kept.push(chat);
+  }
+
+  return kept.reverse();
+};
+
+function ChatPage(props: { chatbar_id?: string }) {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const chatbar_id = props.chatbar_id || "";
+  const isHomePage = chatbar_id === "";
+  const resolvedChatbarId = isHomePage ? "" : getChatbarIdForThreadId(chatbar_id);
+  const { data: chats } = useChatsByChatBarID(resolvedChatbarId);
   const localChats = useAppSelector(getChats);
   const dispatch = useAppDispatch();
   const createChat = useChatCreate();
@@ -24,18 +79,55 @@ function ChatPage(props: { chatbar_id?: number }) {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const [text, setText] = useState("");
+  const [showMoveToTop, setShowMoveToTop] = useState(false);
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
+  const [isTemporaryChat, setIsTemporaryChat] = useState(false);
+
   useEffect(() => {
-    if (chats) {
-      const sorted = [...chats].sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return dateA - dateB;
-      });
-      dispatch(clearChats());
-      setInitialChats(sorted);
-    }
-  }, [chats, chatbar_id, props.chatbar_id, dispatch]);
+    if (typeof window === "undefined") return;
+    const raw = window.sessionStorage.getItem(TEMP_CHAT_MODE_KEY);
+    setIsTemporaryChat(raw === "1");
+  }, []);
+  const handledPendingPromptFor = useRef<string | null>(null);
+  const [settings, setSettings] = useState<AppSettings>(loadSettings());
+  useEffect(() => {
+    setSettings(loadSettings());
+  }, []);
+  useEffect(() => {
+    // Only reset optimistic state when thread changes.
+    dispatch(clearChats());
+    setInitialChats([]);
+    handledPendingPromptFor.current = null;
+  }, [chatbar_id, dispatch]);
+
+  useEffect(() => {
+    if (!chats) return;
+    if (isTemporaryChat) return;
+    const sorted = [...chats].sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateA - dateB;
+    });
+    setInitialChats(sorted);
+  }, [chats, isTemporaryChat]);
+  useEffect(() => {
+    if (isHomePage) return;
+    if (loading || !user?.email) return;
+    if (handledPendingPromptFor.current === chatbar_id) return;
+    const queued = sessionStorage.getItem(pendingPromptKey(chatbar_id));
+    if (!queued || queued.trim().length === 0) return;
+    handledPendingPromptFor.current = chatbar_id;
+    sessionStorage.removeItem(pendingPromptKey(chatbar_id));
+    void handleChatSubmit(queued);
+  }, [isHomePage, chatbar_id, loading, user?.email]);
+  useEffect(() => {
+    const onScroll = () => {
+      setShowMoveToTop(window.scrollY > 300);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   useGSAP(() => {
     gsap.set(panelRef.current, { xPercent: -200, autoAlpha: 0 });
     tlRef.current = gsap.timeline({ paused: true }).to(panelRef.current, {
@@ -45,39 +137,31 @@ function ChatPage(props: { chatbar_id?: number }) {
       ease: "power1",
     });
   }, []);
-  useGSAP(() => {
-    if (isOpen) {
-      gsap.fromTo(
-        "#side-panel",
-        {
-          width: 0,
-        },
-        {
-          width: "30%",
-        },
-      );
-    } else {
-      gsap.fromTo(
-        "#side-panel",
-        {
-          width: "30%",
-        },
-        {
-          width: 0,
-        },
-      );
-    }
-  }, [isOpen]);
   const streamAnswer = async (
     prompt: string,
     onChunk: (s: string) => void,
   ): Promise<string> => {
     let final = "";
+    const settings = loadSettings();
     const res = await fetch("/api/result", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify({
+        prompt,
+        apiKey: settings.apiKey,
+        databaseUrl: settings.databaseUrl,
+        ollamaUrl: settings.ollamaUrl,
+        modelProvider: settings.modelProvider,
+        openaiModel: settings.openaiModel,
+        openrouterModel: settings.openrouterModel,
+        openrouterBaseUrl: settings.openrouterBaseUrl,
+        ollamaModel: settings.ollamaModel,
+      }),
     });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(detail || `Request failed with status ${res.status}`);
+    }
     if (!res.body) throw new Error("No body");
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -100,47 +184,172 @@ function ChatPage(props: { chatbar_id?: number }) {
       setIsOpen(false);
     }
   };
+  const parseModels = (value: string) => {
+    const models = value
+      .split(/[\n,]/)
+      .map((m) => m.trim())
+      .filter(Boolean);
+    return models.length > 0 ? models : [value.trim()].filter(Boolean);
+  };
+  const modelOptions = [
+    ...parseModels(settings.openaiModel).map((model) => ({
+      provider: "openai" as const,
+      model,
+      key: `openai::${model}`,
+      label: `OpenAI - ${model}`,
+    })),
+    ...parseModels(settings.openrouterModel).map((model) => ({
+      provider: "openrouter" as const,
+      model,
+      key: `openrouter::${model}`,
+      label: `OpenRouter - ${model}`,
+    })),
+    ...parseModels(settings.ollamaModel).map((model) => ({
+      provider: "ollama" as const,
+      model,
+      key: `ollama::${model}`,
+      label: `Ollama - ${model}`,
+    })),
+  ];
+  const selectedModel =
+    settings.modelProvider === "openai"
+      ? settings.openaiModel
+      : settings.modelProvider === "openrouter"
+        ? settings.openrouterModel
+        : settings.ollamaModel;
+  const selectedKey = `${settings.modelProvider}::${selectedModel}`;
+  const handleModelChange = (value: string) => {
+    const [provider, model] = value.split("::");
+    const next =
+      provider === "openai"
+        ? { ...settings, modelProvider: "openai" as const, openaiModel: model }
+        : provider === "openrouter"
+          ? {
+              ...settings,
+              modelProvider: "openrouter" as const,
+              openrouterModel: model,
+            }
+          : { ...settings, modelProvider: "ollama" as const, ollamaModel: model };
+    setSettings(next);
+    saveSettings(next);
+  };
   const handleChatSubmit = async (text: string) => {
     const userText = text.trim();
     if (!userText) return;
-    let role: "user" | "assistant" = "user"; // default role
-    if (localChats.length > 0) {
-      const last = localChats[localChats.length - 1];
-      role = last.role === "user" ? "assistant" : "user";
+    if (!isTemporaryChat && (loading || !user?.email)) {
+      dispatch(
+        addChatToChats({
+          text: "Session is still loading. Please try again in a moment.",
+          chatbar_id: resolvedChatbarId,
+          email: "",
+          role: "assistant",
+        }),
+      );
+      return;
+    }
+    let targetChatbarId = isTemporaryChat ? TEMP_CHAT_ID : resolvedChatbarId;
+    if (!isTemporaryChat && isHomePage) {
+      const res = await client.api.chatbarchat.$post({
+        json: {
+          chat_name: getChatTitleFromPrompt(userText),
+          folder_id: "DEFAULT",
+          email: user?.email || "",
+        },
+      });
+      if (!res.ok) {
+        throw new Error("Failed to create chat");
+      }
+      const data = (await res.json()) as Array<{ id: number }>;
+      const first = data?.[0];
+      if (!first?.id) {
+        throw new Error("Failed to open chat");
+      }
+      const threadId = generateThreadId();
+      setThreadIdForChatbar(first.id, threadId);
+      sessionStorage.setItem(pendingPromptKey(threadId), userText);
+      navigate({ to: "/chat/$chatId", params: { chatId: threadId } });
+      return;
     }
     dispatch(
       addChatToChats({
         text: userText,
-        chatbar_id,
+        chatbar_id: targetChatbarId,
         email: user?.email || "",
-        role,
+        role: "user",
       }),
     );
     setText("");
+    if (isTemporaryChat) {
+      try {
+        const final = await streamAnswer(userText, (chunk) =>
+          setText((prev) => prev + chunk),
+        );
+        dispatch(
+          addChatToChats({
+            text: final,
+            chatbar_id: targetChatbarId,
+            email: "",
+            role: "assistant",
+          }),
+        );
+        setText("");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to get assistant response";
+        setText("");
+        dispatch(
+          addChatToChats({
+            text: message,
+            chatbar_id: targetChatbarId,
+            email: "",
+            role: "assistant",
+          }),
+        );
+      }
+      return;
+    }
     await createChat({
       text: userText,
-      chatbar_id: chatbar_id.toString(),
+      chatbar_id: String(
+        isHomePage ? getChatbarIdForThreadId(targetChatbarId) : targetChatbarId,
+      ),
       email: user?.email,
       role: "user",
     });
-    const final = await streamAnswer(userText, (chunk) =>
-      setText((prev) => prev + chunk),
-    );
-    dispatch(
-      addChatToChats({
+    try {
+      const final = await streamAnswer(userText, (chunk) =>
+        setText((prev) => prev + chunk),
+      );
+      dispatch(
+        addChatToChats({
+          text: final,
+          chatbar_id: targetChatbarId,
+          email: user?.email || "",
+          role: "assistant",
+        }),
+      );
+      setText("");
+      await createChat({
         text: final,
-        chatbar_id,
-        email: user?.email || "",
+        chatbar_id: String(
+          isHomePage ? getChatbarIdForThreadId(targetChatbarId) : targetChatbarId,
+        ),
+        email: user?.email,
         role: "assistant",
-      }),
-    );
-    setText("");
-    await createChat({
-      text: final,
-      chatbar_id: chatbar_id.toString(),
-      email: user?.email,
-      role: "assistant",
-    });
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get assistant response";
+      setText("");
+      dispatch(
+        addChatToChats({
+          text: message,
+          chatbar_id: targetChatbarId,
+          email: user?.email || "",
+          role: "assistant",
+        }),
+      );
+    }
   };
   const items = useMemo(() => {
     if (!initialChats) return [];
@@ -150,7 +359,12 @@ function ChatPage(props: { chatbar_id?: number }) {
       return dateA - dateB;
     });
   }, [props.chatbar_id, initialChats]);
-  const renderChatSections = items.map((chat) => {
+  const visibleItems = useMemo(
+    () => hideResolvedAssistantWarnings(items, settings.modelProvider),
+    [items, settings.modelProvider],
+  );
+  const localFilterId = isTemporaryChat ? TEMP_CHAT_ID : resolvedChatbarId;
+  const renderChatSections = visibleItems.map((chat) => {
     const isPrompt = chat.role === "user";
     const key = chat.id ?? `${chat.created_at}-${chat.role}`;
     return (
@@ -167,7 +381,19 @@ function ChatPage(props: { chatbar_id?: number }) {
       </div>
     );
   });
-  const localChat = localChats.map((chat) => {
+  const localVisibleChats = hideResolvedAssistantWarnings(
+    localChats
+      .filter((chat) => String(chat.chatbar_id ?? "") === String(localFilterId))
+      .filter((chat) => {
+        // Hide optimistic entries once the same persisted message exists.
+        if (isTemporaryChat) return true;
+        return !initialChats.some(
+          (saved) => saved.role === chat.role && saved.text === chat.text,
+        );
+      }),
+    settings.modelProvider,
+  );
+  const localChat = localVisibleChats.map((chat) => {
     const isPrompt = chat.role === "user";
     const key = chat.id ?? `${chat.created_at}-${chat.role}`;
     return (
@@ -184,28 +410,33 @@ function ChatPage(props: { chatbar_id?: number }) {
       </div>
     );
   });
+  const hasRenderedChats =
+    (!isTemporaryChat && initialChats.length > 0) ||
+    localChat.length > 0 ||
+    text.trim().length > 0;
+  const handleMoveToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
   return (
     <>
-      <div className="flex">
-        <div id="side-panel" className="flex bg-black w-2/5">
-          <aside
-            ref={panelRef}
-            id="chat-panel"
-            aria-hidden={!isOpen}
-            className="fixed left-0 top-0 w-full pointer-events-auto"
-          >
-            <ChatsBar handleBtn={handleChatPanel} />
-          </aside>
-        </div>
-        <div className="w-full flex flex-row h-full min-h-screen bg-black relative">
+      <div className="flex bg-black min-h-screen overflow-x-hidden">
+        <aside
+          ref={panelRef}
+          id="chat-panel"
+          aria-hidden={!isOpen}
+          className={`fixed left-0 top-0 z-40 h-screen ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+        >
+          <ChatsBar handleBtn={handleChatPanel} disabled={!isOpen} />
+        </aside>
+        <div
+          className={`w-full flex flex-row h-full min-h-screen bg-black relative transition-[padding] duration-300 ${isOpen ? "pl-[360px]" : "pl-12"}`}
+        >
           <div>
             <Avatar />
           </div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,163,74,0.4),_transparent_40%)]"></div>
           <div className="flex flex-col gap-3 justify-center items-center w-full h-full">
-            <div
-              className={`w-full ${isOpen ? "px-20" : "px-50"} flex flex-col gap-5 mt-20 justify-end`}
-            >
+            <div className="w-full px-12 md:px-20 lg:px-50 flex flex-col gap-5 mt-20 justify-end">
               {initialChats.length > 0 && renderChatSections}
               {localChat}
               {text !== "" && (
@@ -218,18 +449,79 @@ function ChatPage(props: { chatbar_id?: number }) {
               <div
                 className={`flex justify-center items-center w-full mt-10 ${chats && chats.length > 0 && "mb-20"}`}
               >
-                <SearchBar searchBtn={(prompt) => handleChatSubmit(prompt)} />
+                <div className="w-full flex flex-col items-center gap-2">
+                  <SearchBar searchBtn={(prompt) => handleChatSubmit(prompt)} />
+                  <div className="w-[40%] flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsTemporaryChat((prev) => {
+                          const next = !prev;
+                          window.sessionStorage.setItem(
+                            TEMP_CHAT_MODE_KEY,
+                            next ? "1" : "0",
+                          );
+                          dispatch(clearChats());
+                          setInitialChats([]);
+                          setText("");
+                          return next;
+                        });
+                      }}
+                      className={`h-9 rounded-xl px-3 text-sm border transition-colors flex items-center gap-2 ${
+                        isTemporaryChat
+                          ? "bg-amber-500/15 text-amber-200 border-amber-400/60"
+                          : "bg-[#041321]/90 text-slate-200 border-white/20 hover:border-white/35"
+                      }`}
+                    >
+                      <span>Temp Chat</span>
+                      <span
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                          isTemporaryChat ? "bg-amber-400/80" : "bg-slate-600/80"
+                        }`}
+                        aria-hidden="true"
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                            isTemporaryChat ? "translate-x-4" : "translate-x-0.5"
+                          }`}
+                        />
+                      </span>
+                    </button>
+                    <select
+                      value={selectedKey}
+                      onChange={(e) => handleModelChange(e.target.value)}
+                      className="theme-select h-9 rounded-xl bg-[#041321]/90 backdrop-blur-sm border border-emerald-500/55 text-white text-sm shadow-[0_0_0_1px_rgba(16,185,129,0.20)] hover:border-emerald-400/70 focus:border-emerald-300/80 focus:outline-none"
+                    >
+                      {modelOptions.map((option) => (
+                        <option key={option.key} value={option.key}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
-              {chats?.length === 0 && <ChatPanel />}
+              {!hasRenderedChats && <ChatPanel />}
             </div>
           </div>
           {!isOpen && (
+            <div className="fixed top-0 left-0 z-30 h-screen w-12 bg-slate-950/95 backdrop-blur-md border-r border-white/10">
+              <Button
+                onClick={handleChatPanel}
+                id="arrow-Btn"
+                className="absolute top-5 left-2 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl"
+              >
+                <FaArrowRight className="text-white/80" />
+              </Button>
+            </div>
+          )}
+          {showMoveToTop && (
             <Button
-              onClick={handleChatPanel}
-              id="arrow-Btn"
-              className="fixed top-5 left-5 bg-gray-700/20 border-2 border-transparent hover:border-gray-700/50 hover:bg-white/10 rounded-full w-10 h-10 backdrop-blur-2xl"
+              onClick={handleMoveToTop}
+              className="fixed bottom-6 right-6 z-40 rounded-full h-11 w-11 bg-slate-900/90 border border-white/20 hover:bg-slate-800 text-white shadow-lg"
+              aria-label="Move to top"
             >
-              <FaArrowRight className="text-white/80" />
+              ↑
             </Button>
           )}
         </div>

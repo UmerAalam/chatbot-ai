@@ -11,7 +11,7 @@ import {
 } from "./chatbar.dto";
 import {
   AddChatBarChat,
-  DeleteChatBarChat,
+  DeleteChatBarChatById,
   UpdateChatBarChat,
   UserChatsByEmail,
   UserChatsByFolderID,
@@ -26,7 +26,7 @@ export const chatbarRoute = new Hono()
   })
   .delete("/", zValidator("json", deleteUserChatSchema), async (c) => {
     const { id } = await c.req.json();
-    const res = await DeleteChatBarChat(id);
+    const res = await DeleteChatBarChatById(id);
     return c.json(res, 200);
   })
   .patch("/", zValidator("json", renameChatBarChatSchema), async (c) => {
@@ -39,14 +39,8 @@ export const chatbarRoute = new Hono()
     const res = await UserChatsByEmail(email!);
     return c.json(res, 200);
   })
-  .get(
-    "/folderID",
-    zValidator("query", userChatsByFolderIDSchema),
-    async (c) => {
-      const folder_id = c.req.query("folder_id");
-      const res: ChatBarChat[] = await UserChatsByFolderID(
-        folder_id?.toString()!,
-      );
-      return c.json(res, 200);
-    },
-  );
+  .get("/folderID", zValidator("query", userChatsByFolderIDSchema), async (c) => {
+    const folder_id = c.req.query("folder_id");
+    const res: ChatBarChat[] = await UserChatsByFolderID(folder_id?.toString()!);
+    return c.json(res, 200);
+  });

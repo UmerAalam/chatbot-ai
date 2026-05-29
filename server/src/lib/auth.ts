@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import "dotenv/config";
 
 export const auth = betterAuth({
-  baseURL: "http://localhost:8000",
+  baseURL: "http://localhost:8000/api/auth",
   secret: process.env.BETTER_AUTH_SECRET!,
   database: new Pool({
     connectionString: process.env.DATABASE_URL!,
@@ -13,7 +13,7 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      redirectURI: "http://localhost:3000/chatpage",
+      redirectURI: "http://localhost:8000/api/auth/callback/google",
     },
   },
 });

@@ -4,16 +4,13 @@ interface Props {
 }
 function ChatBarSearch({ searchHandle }: Props) {
   return (
-    <div className="min-h-12 px-3 w-full bg-gray-700/20 border-2 border-transparent hover:border-gray-500/50 backdrop-blur-2xl rounded-2xl">
-      <div className="flex gap-3 justify-start h-full items-center">
-        <IoMdSearch className="h-6 w-auto text-white/80" />
-        <div className="h-6 w-px bg-gray-500/50" />
-        <input
-          className="text-white font-bold h-full w-[80%] border-none outline-none"
-          placeholder="Search"
-          onChange={(e) => searchHandle(e.target.value)}
-        />
-      </div>
+    <div className="relative w-full">
+      <IoMdSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60" />
+      <input
+        className="h-11 w-full rounded-lg pl-10 pr-3 bg-gray-800 border border-gray-700 text-white/90 font-semibold outline-none placeholder:text-white/40"
+        placeholder="Search"
+        onChange={(e) => searchHandle(e.target.value)}
+      />
     </div>
   );
 }

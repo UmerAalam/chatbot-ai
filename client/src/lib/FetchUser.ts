@@ -4,12 +4,9 @@ import { useNavigate } from "@tanstack/react-router";
 type User =
   | {
       id: string;
-      createdAt: Date;
-      updatedAt: Date;
       email: string;
-      emailVerified: boolean;
       name: string;
-      image?: string | null | undefined;
+      image?: string | null;
     }
   | undefined;
 
@@ -19,18 +16,28 @@ export async function fetchSession() {
   return session?.user;
 }
 export function useAuth() {
+  return useAuthGuard();
+}
+
+export function useAuthGuard(options?: { requireAuth?: boolean; redirectTo?: string }) {
   const [user, setUser] = useState<User | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const requireAuth = options?.requireAuth ?? true;
+  const redirectTo = options?.redirectTo ?? "/signin";
   useEffect(() => {
     fetchSession().then((user) => {
       if (!user) {
-        return navigate({ to: "/" });
+        setLoading(false);
+        if (requireAuth) {
+          return navigate({ to: redirectTo });
+        }
+        return;
       }
       setUser(user);
       setLoading(false);
     });
-  }, []);
+  }, [navigate, requireAuth, redirectTo]);
 
   return { user, loading };
 }

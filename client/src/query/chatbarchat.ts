@@ -5,10 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { client } from "src/lib/client";
-import type {
-  ChatBarChat,
-  RenameChatBarChat,
-} from "src/types/ChatBarChat.types";
+import type { ChatBarChat, RenameChatBarChat } from "src/types/ChatBarChat.types";
 
 export const useChatBarChatCreate = () => {
   const queryClient = useQueryClient();
@@ -98,7 +95,7 @@ const userChatBarChats = (email: string) => {
       const data = await res.json();
       return data as ChatBarChat[];
     },
-    queryKey: ["chatbarchats"],
+    queryKey: ["chatbarchats", email],
     enabled: !!email,
   });
 };

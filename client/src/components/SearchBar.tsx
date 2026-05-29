@@ -15,11 +15,14 @@ function SearchBar({ searchBtn, ...rest }: Props) {
   useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
-    const prev = el.value;
-    el.value = "x";
+    const computed = window.getComputedStyle(el);
+    const lineHeight = parseFloat(computed.lineHeight);
+    if (!Number.isNaN(lineHeight) && lineHeight > 0) {
+      oneLineHeightRef.current = lineHeight;
+      return;
+    }
     requestAnimationFrame(() => {
       oneLineHeightRef.current = el.scrollHeight;
-      el.value = prev;
     });
   }, []);
 

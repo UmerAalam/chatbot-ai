@@ -8,10 +8,7 @@ export const AddFolder = async (folder: Folder) => {
   return res;
 };
 export const DeleteFolderByID = async (id: number) => {
-  const res = await db
-    .delete(foldersTable)
-    .where(eq(foldersTable.id, id))
-    .returning();
+  const res = await db.delete(foldersTable).where(eq(foldersTable.id, id)).returning();
   return res;
 };
 export const RenameFolderByID = async (renameFolder: RenameFolder) => {
@@ -22,9 +19,6 @@ export const RenameFolderByID = async (renameFolder: RenameFolder) => {
   return res;
 };
 export const UserFoldersByEmail = async (email: string) => {
-  const res = await db
-    .select()
-    .from(foldersTable)
-    .where(eq(foldersTable.email, email));
+  const res = await db.select().from(foldersTable).where(eq(foldersTable.email, email));
   return res;
 };

@@ -22,5 +22,4 @@ export const renameChatBarChatSchema = z.object({
 });
 
 export interface ChatBarChat extends z.infer<typeof chatBarChatSchema> {}
-export interface RenameChatBarChat
-  extends z.infer<typeof renameChatBarChatSchema> {}
+export interface RenameChatBarChat extends z.infer<typeof renameChatBarChatSchema> {}

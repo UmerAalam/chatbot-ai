@@ -1,6 +1,8 @@
 import { useFolders } from "src/query/folder";
 import ChatFolder from "./ChatFolder";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useAuth } from "src/lib/FetchUser";
+import { Loader2 } from "lucide-react";
 
 interface FolderProps {
   name: string;
@@ -11,12 +13,9 @@ interface Props {
   showChatFolder: ({ name, folder_id }: FolderProps) => void;
 }
 const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
-  const [email, setEmail] = useState("");
+  const { user } = useAuth();
+  const email = user?.email || "";
   const { data: folders, isLoading: folderLoading } = useFolders(email);
-  useEffect(() => {
-    const stored = localStorage.getItem("email");
-    if (stored) setEmail(stored);
-  }, []);
   const items = useMemo(() => {
     if (!folders) return [];
     const list = searchTerm.trim()
@@ -31,7 +30,11 @@ const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
     });
   }, [searchTerm, folders]);
   if (folderLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="w-full flex items-center justify-center py-4">
+        <Loader2 className="h-5 w-5 animate-spin text-white/70" />
+      </div>
+    );
   }
   return (
     <div className="w-full">
@@ -41,8 +44,7 @@ const FoldersList = ({ searchTerm, showChatFolder }: Props) => {
             id={folder.id}
             currentName={folder.folder_name}
             onRowClick={(name) => {
-              folder.id &&
-                showChatFolder({ name, folder_id: folder.id.toString() });
+              folder.id && showChatFolder({ name, folder_id: folder.id.toString() });
             }}
           />
         </div>

@@ -11,20 +11,25 @@ const Avatar = () => {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [email, setEmail] = useState("");
   const username = email.split("@")[0];
+  const fallbackLetter = (
+    user?.name?.trim()?.[0] ||
+    user?.email?.trim()?.[0] ||
+    "U"
+  ).toUpperCase();
   const navigate = useNavigate();
   useEffect(() => {
     const LoadUserDetails = async () => {
-      setEmail(user!.email);
-      setAvatar(user!.image!);
+      if (!user) return;
+      setEmail(user.email);
+      const image = user.image || "";
+      setAvatar(image);
+      setShowCustomAvatar(!image);
     };
     LoadUserDetails();
-  }, [loading]);
+  }, [loading, user]);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropDown(false);
       }
     };
@@ -45,7 +50,7 @@ const Avatar = () => {
   return (
     <div
       onClick={() => setShowDropDown(!showDropdown)}
-      className="absolute cursor-pointer top-5 right-5 bg-white z-10 rounded-full border-2 border-green-400 w-10 h-10"
+      className="fixed cursor-pointer top-5 right-5 bg-white z-50 rounded-full border-2 border-green-400 w-10 h-10 shadow-md"
     >
       {showDropdown && (
         <div
@@ -57,6 +62,12 @@ const Avatar = () => {
               {username}
             </li>
             <li
+              onClick={() => navigate({ to: "/settings" })}
+              className="flex justify-start items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-lg text-gray-200 hover:text-white"
+            >
+              Settings
+            </li>
+            <li
               onClick={() => handleSignOut()}
               className="flex justify-start items-center px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-lg text-red-400 hover:text-red-300"
             >
@@ -66,8 +77,8 @@ const Avatar = () => {
         </div>
       )}
       {showCustomAvatar ? (
-        <div className="flex justify-center select-none items-center font-bold text-white text-xl w-full h-full bg-green-700 rounded-full">
-          {user && user?.name.slice(0, 1)}
+        <div className="flex justify-center select-none items-center font-extrabold text-white text-xl w-full h-full bg-green-700 rounded-full">
+          {fallbackLetter}
         </div>
       ) : (
         <img

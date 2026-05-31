@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
-import "dotenv/config";
+import "../env";
 
 export const auth = betterAuth({
   baseURL: "http://localhost:8000/api/auth",

@@ -22,7 +22,6 @@ import {
   setThreadIdForChatbar,
 } from "src/lib/threadId";
 
-const pendingPromptKey = (threadId: string) => `pending_prompt_${threadId}`;
 const TEMP_CHAT_ID = "TEMP_SESSION_CHAT";
 const TEMP_CHAT_MODE_KEY = "temp_chat_mode";
 
@@ -82,13 +81,19 @@ function ChatPage(props: { chatbar_id?: string }) {
   const [showMoveToTop, setShowMoveToTop] = useState(false);
   const [initialChats, setInitialChats] = useState<Chat[]>([]);
   const [isTemporaryChat, setIsTemporaryChat] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const raw = window.sessionStorage.getItem(TEMP_CHAT_MODE_KEY);
     setIsTemporaryChat(raw === "1");
   }, []);
-  const handledPendingPromptFor = useRef<string | null>(null);
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
   const [settings, setSettings] = useState<AppSettings>(loadSettings());
   useEffect(() => {
     setSettings(loadSettings());
@@ -97,7 +102,6 @@ function ChatPage(props: { chatbar_id?: string }) {
     // Only reset optimistic state when thread changes.
     dispatch(clearChats());
     setInitialChats([]);
-    handledPendingPromptFor.current = null;
   }, [chatbar_id, dispatch]);
 
   useEffect(() => {
@@ -110,16 +114,6 @@ function ChatPage(props: { chatbar_id?: string }) {
     });
     setInitialChats(sorted);
   }, [chats, isTemporaryChat]);
-  useEffect(() => {
-    if (isHomePage) return;
-    if (loading || !user?.email) return;
-    if (handledPendingPromptFor.current === chatbar_id) return;
-    const queued = sessionStorage.getItem(pendingPromptKey(chatbar_id));
-    if (!queued || queued.trim().length === 0) return;
-    handledPendingPromptFor.current = chatbar_id;
-    sessionStorage.removeItem(pendingPromptKey(chatbar_id));
-    void handleChatSubmit(queued);
-  }, [isHomePage, chatbar_id, loading, user?.email]);
   useEffect(() => {
     const onScroll = () => {
       setShowMoveToTop(window.scrollY > 300);
@@ -140,12 +134,14 @@ function ChatPage(props: { chatbar_id?: string }) {
   const streamAnswer = async (
     prompt: string,
     onChunk: (s: string) => void,
+    signal?: AbortSignal,
   ): Promise<string> => {
     let final = "";
     const settings = loadSettings();
     const res = await fetch("/api/result", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal,
       body: JSON.stringify({
         prompt,
         apiKey: settings.apiKey,
@@ -234,6 +230,7 @@ function ChatPage(props: { chatbar_id?: string }) {
     saveSettings(next);
   };
   const handleChatSubmit = async (text: string) => {
+    if (isGenerating) return;
     const userText = text.trim();
     if (!userText) return;
     if (!isTemporaryChat && (loading || !user?.email)) {
@@ -266,9 +263,8 @@ function ChatPage(props: { chatbar_id?: string }) {
       }
       const threadId = generateThreadId();
       setThreadIdForChatbar(first.id, threadId);
-      sessionStorage.setItem(pendingPromptKey(threadId), userText);
+      targetChatbarId = String(first.id);
       navigate({ to: "/chat/$chatId", params: { chatId: threadId } });
-      return;
     }
     dispatch(
       addChatToChats({
@@ -279,10 +275,19 @@ function ChatPage(props: { chatbar_id?: string }) {
       }),
     );
     setText("");
+    setIsGenerating(true);
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    let partialText = "";
     if (isTemporaryChat) {
       try {
         const final = await streamAnswer(userText, (chunk) =>
-          setText((prev) => prev + chunk),
+          setText((prev) => {
+            const next = prev + chunk;
+            partialText = next;
+            return next;
+          }),
+          controller.signal,
         );
         dispatch(
           addChatToChats({
@@ -294,6 +299,20 @@ function ChatPage(props: { chatbar_id?: string }) {
         );
         setText("");
       } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+          if (partialText.trim().length > 0) {
+            dispatch(
+              addChatToChats({
+                text: partialText,
+                chatbar_id: targetChatbarId,
+                email: "",
+                role: "assistant",
+              }),
+            );
+          }
+          setText("");
+          return;
+        }
         const message =
           error instanceof Error ? error.message : "Failed to get assistant response";
         setText("");
@@ -305,20 +324,30 @@ function ChatPage(props: { chatbar_id?: string }) {
             role: "assistant",
           }),
         );
+      } finally {
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
+        setIsGenerating(false);
       }
       return;
     }
-    await createChat({
-      text: userText,
-      chatbar_id: String(
-        isHomePage ? getChatbarIdForThreadId(targetChatbarId) : targetChatbarId,
-      ),
-      email: user?.email,
-      role: "user",
-    });
     try {
+      await createChat({
+        text: userText,
+        chatbar_id: String(
+          isHomePage ? getChatbarIdForThreadId(targetChatbarId) : targetChatbarId,
+        ),
+        email: user?.email,
+        role: "user",
+      });
       const final = await streamAnswer(userText, (chunk) =>
-        setText((prev) => prev + chunk),
+        setText((prev) => {
+          const next = prev + chunk;
+          partialText = next;
+          return next;
+        }),
+        controller.signal,
       );
       dispatch(
         addChatToChats({
@@ -338,6 +367,28 @@ function ChatPage(props: { chatbar_id?: string }) {
         role: "assistant",
       });
     } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        if (partialText.trim().length > 0) {
+          dispatch(
+            addChatToChats({
+              text: partialText,
+              chatbar_id: targetChatbarId,
+              email: user?.email || "",
+              role: "assistant",
+            }),
+          );
+          await createChat({
+            text: partialText,
+            chatbar_id: String(
+              isHomePage ? getChatbarIdForThreadId(targetChatbarId) : targetChatbarId,
+            ),
+            email: user?.email,
+            role: "assistant",
+          });
+        }
+        setText("");
+        return;
+      }
       const message =
         error instanceof Error ? error.message : "Failed to get assistant response";
       setText("");
@@ -349,7 +400,15 @@ function ChatPage(props: { chatbar_id?: string }) {
           role: "assistant",
         }),
       );
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
+      setIsGenerating(false);
     }
+  };
+  const handleStop = () => {
+    abortControllerRef.current?.abort();
   };
   const items = useMemo(() => {
     if (!initialChats) return [];
@@ -450,7 +509,11 @@ function ChatPage(props: { chatbar_id?: string }) {
                 className={`flex justify-center items-center w-full mt-10 ${chats && chats.length > 0 && "mb-20"}`}
               >
                 <div className="w-full flex flex-col items-center gap-2">
-                  <SearchBar searchBtn={(prompt) => handleChatSubmit(prompt)} />
+                  <SearchBar
+                    searchBtn={(prompt) => handleChatSubmit(prompt)}
+                    isGenerating={isGenerating}
+                    onStop={handleStop}
+                  />
                   <div className="w-[40%] flex items-center justify-between gap-3">
                     <button
                       type="button"

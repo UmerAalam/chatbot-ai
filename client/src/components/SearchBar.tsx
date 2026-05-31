@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { FaArrowRight } from "react-icons/fa";
+import { FaStop } from "react-icons/fa6";
 import { useLayoutEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
-  searchBtn?: (prompt: string) => void;
+  searchBtn?: (prompt: string) => Promise<void> | void;
+  isGenerating?: boolean;
+  onStop?: () => void;
 }
-function SearchBar({ searchBtn, ...rest }: Props) {
+function SearchBar({ searchBtn, isGenerating = false, onStop, ...rest }: Props) {
   const [multiLine, setMultiLine] = useState(false);
   const [prompt, setPrompt] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -31,12 +34,12 @@ function SearchBar({ searchBtn, ...rest }: Props) {
     if (base != null) setMultiLine(height > base + 1);
   };
 
-  const fireSearch = async () => {
-    const value = prompt;
+  const fireSearch = (rawPrompt?: string) => {
+    const value = rawPrompt ?? prompt;
     if (value.trim() === "") {
       return;
     }
-    searchBtn && searchBtn(prompt);
+    searchBtn && searchBtn(value);
     setPrompt("");
   };
   return (
@@ -65,8 +68,7 @@ function SearchBar({ searchBtn, ...rest }: Props) {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                setPrompt(e.currentTarget.value);
-                fireSearch();
+                fireSearch(e.currentTarget.value);
               }
             }}
             minRows={1}
@@ -83,11 +85,21 @@ function SearchBar({ searchBtn, ...rest }: Props) {
           <div className="h-6 w-px bg-gray-700/50" />
           <Button
             type="button"
-            onClick={fireSearch}
-            disabled={!prompt.trim()}
+            onClick={() => {
+              if (isGenerating) {
+                onStop?.();
+                return;
+              }
+              fireSearch();
+            }}
+            disabled={isGenerating ? false : !prompt.trim()}
             className="bg-white/10 hover:bg-white/5 border-2 border-transparent hover:border-white/50 rounded-full p-3 w-8 h-8 backdrop-blur-2xl"
           >
-            <FaArrowRight className="text-white/80" />
+            {isGenerating ? (
+              <FaStop className="text-white/80" />
+            ) : (
+              <FaArrowRight className="text-white/80" />
+            )}
           </Button>
         </div>
       </div>

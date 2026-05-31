@@ -7,7 +7,6 @@ import {
   renameFolderSchema,
 } from "./folder.dto";
 import { supabase } from "../../server";
-import "dotenv/config";
 import {
   AddFolder,
   DeleteFolderByID,

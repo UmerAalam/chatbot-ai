@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import "dotenv/config";
+import "./env";
 import { openaiRoute } from "./modules/openAI/openaiRoute";
 import { folderRoute } from "./modules/folder/folder.route";
 import { chatbarRoute } from "./modules/chatbar/chatbarRoute";
